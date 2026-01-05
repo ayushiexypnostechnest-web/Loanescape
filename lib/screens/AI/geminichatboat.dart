@@ -30,7 +30,7 @@ class _GeminichatboatState extends State<Geminichatboat> {
 
   final TextEditingController promptController = TextEditingController();
 
-  static const String apiKey = "AIzaSyCxSfPcEEaT989HhNSratlc22FXRcdIWr8";
+  static const String apiKey = "AIzaSyCWw6ufvjmj6gjLjZtGDhwIR1M7G3FGkQU";
   late final GenerativeModel model;
 
   List<ModelMessage> get prompt => ChatStorage().messages;
@@ -44,7 +44,7 @@ class _GeminichatboatState extends State<Geminichatboat> {
     }
   }
 
-  //PROMPT FOR LOAN
+ 
   String _buildLoanContext() {
     final loan = widget.loan;
 
@@ -413,7 +413,7 @@ End of Prompt
                     hintText: "Ask anything...",
                     isDense: true,
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.zero,
+                    contentPadding: EdgeInsets.only(bottom: 1),
                   ),
                 ),
               ),
@@ -442,69 +442,60 @@ End of Prompt
   }
 
   Widget _header() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
-      height: 134,
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + 10,
+        left: 20,
+        right: 20,
+        bottom: 14,
+      ),
       decoration: BoxDecoration(
-        color: Theme.of(context).brightness == Brightness.dark
+        color: isDark
             ? AppDarkColors.scaffold.withOpacity(0.30)
             : AppColors.scaffold,
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.12),
-            blurRadius: 2,
-            offset: Offset(0, 0),
-          ),
+          BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 2),
         ],
       ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.arrow_back_ios,
-                      size: 16,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? AppDarkColors.white
-                          : AppColors.primary,
-                    ),
-
-                    Text(
-                      "Loan Information",
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? AppDarkColors.white
-                            : AppColors.primary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min, // ✅ VERY IMPORTANT
+        children: [
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.arrow_back_ios,
+                  size: 16,
+                  color: isDark ? Colors.white : AppColors.primary,
                 ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                "Ask AI",
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w600,
-                  fontFamily: 'Lato',
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? AppDarkColors.white
-                      : AppColors.primary,
+                const SizedBox(width: 4),
+                Text(
+                  "Loan Information",
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? Colors.white : AppColors.primary,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+          const SizedBox(height: 10),
+          Text(
+            "Ask AI",
+            style: TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Lato',
+              height: 1.2,
+              color: isDark ? Colors.white : AppColors.primary,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -558,7 +549,7 @@ End of Prompt
                       fontFamily: 'Lato',
                       color: Theme.of(context).brightness == Brightness.dark
                           ? AppDarkColors.white
-                          : Colors.black87,
+                          : Colors.black,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -575,7 +566,7 @@ End of Prompt
                       fontFamily: 'Lato',
                       color: Theme.of(context).brightness == Brightness.dark
                           ? AppDarkColors.white
-                          : Colors.black87,
+                          : Colors.black,
                     ),
                   ),
                 ],

@@ -30,7 +30,6 @@ class _SettingPageState extends State<SettingPage> {
   File? _profileImage;
 
   final ScrollController _controller = ScrollController();
-  bool _showTitle = false;
 
   void _confirmDelete(BuildContext context) {
     showPlatformDialog(
@@ -76,11 +75,7 @@ class _SettingPageState extends State<SettingPage> {
   @override
   void initState() {
     super.initState();
-    _controller.addListener(() {
-      setState(() {
-        _showTitle = _controller.offset > 40;
-      });
-    });
+
     _loadAppVersion();
     _loadUserData();
   }
@@ -206,7 +201,7 @@ class _SettingPageState extends State<SettingPage> {
                                 child: Text(
                                   "Settings",
                                   style: TextStyle(
-                                    fontSize: 18,
+                                    fontSize: 22,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),

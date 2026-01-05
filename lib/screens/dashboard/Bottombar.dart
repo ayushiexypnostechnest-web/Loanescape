@@ -112,7 +112,7 @@ class _DashboardBottomBarState extends State<DashboardBottomBar> {
             ),
           ],
         ),
-
+      
         bottomNavigationBar: _buildBottomBar(isDark),
       ),
     );

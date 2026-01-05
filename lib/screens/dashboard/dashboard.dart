@@ -82,7 +82,7 @@ class DashboardScreenState extends State<DashboardScreen> {
       backgroundColor: Theme.of(context).brightness == Brightness.dark
           ? AppDarkColors.scaffold
           : AppColors.scaffold,
-    
+
       body: Stack(
         children: [
           SingleChildScrollView(
@@ -106,16 +106,15 @@ class DashboardScreenState extends State<DashboardScreen> {
                           fontFamily: 'Lato',
                           fontSize: 20,
                           fontWeight: FontWeight.w600,
-                          color:
-                              Theme.of(context).brightness == Brightness.dark
+                          color: Theme.of(context).brightness == Brightness.dark
                               ? AppDarkColors.textPrimary
                               : AppColors.textPrimary,
                         ),
                       ),
-    
+
                       GestureDetector(
                         onTap: () => widget.onViewAll(loans),
-    
+
                         child: Text(
                           "View All",
                           style: TextStyle(
@@ -127,9 +126,9 @@ class DashboardScreenState extends State<DashboardScreen> {
                       ),
                     ],
                   ),
-    
+
                 if (loans.isNotEmpty) SizedBox(height: 14),
-    
+
                 loans.isEmpty
                     ? Padding(
                         padding: EdgeInsets.symmetric(
@@ -146,7 +145,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                               fit: BoxFit.contain,
                               repeat: true,
                             ),
-    
+
                             Text(
                               "we’re sorry, no data available at the moment. Please add your loan",
                               textAlign: TextAlign.center,
@@ -168,29 +167,29 @@ class DashboardScreenState extends State<DashboardScreen> {
                         padding: EdgeInsets.only(
                           bottom: MediaQuery.of(context).padding.bottom,
                         ),
-    
+
                         itemCount: loans.length,
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),
                         itemBuilder: (context, index) {
                           final loan = loans[index];
-    
+
                           final rate = LoanCalculator.getCurrentRate(
                             loan.toJson(),
                           );
-    
+
                           final years = int.tryParse(loan.durationYears) ?? 0;
                           final months = max(1, years * 12);
-    
+
                           final emi = LoanCalculator.calculateEmi(
                             principal: loan.amount,
                             annualRate: rate,
                             months: months,
                           );
-    
+
                           final loanMap = loan.toJson();
                           loanMap["emi"] = emi;
-    
+
                           return ActiveLoanCard(
                             loan: loanMap,
                             index: index,
@@ -202,9 +201,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                                 onSave: (_) {},
                                 onUpdate: (i, updatedLoan) async {
                                   loans[i] = updatedLoan;
-                                  await LoanStorageService.saveAllLoans(
-                                    loans,
-                                  );
+                                  await LoanStorageService.saveAllLoans(loans);
                                   setState(() {});
                                 },
                               );
@@ -216,7 +213,7 @@ class DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
           ),
-    
+
           SizedBox(
             height: MediaQuery.of(context).padding.top + 80,
             child: Material(
@@ -227,7 +224,7 @@ class DashboardScreenState extends State<DashboardScreen> {
               shadowColor: Theme.of(context).brightness == Brightness.dark
                   ? AppDarkColors.shadow
                   : AppColors.shadow,
-    
+
               child: ClipRect(
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 7, sigmaY: 7),
@@ -265,7 +262,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                                   ),
                           ),
                         ),
-    
+
                         SizedBox(width: 8),
                         Expanded(
                           child: Column(
@@ -330,13 +327,9 @@ class DashboardScreenState extends State<DashboardScreen> {
                                   //   ),
                                   // ],
                                 ),
-                                child: Row(
-                                  children: [
-                                    SizedBox(width: double.infinity),
-                                  ],
-                                ),
+                                child: SizedBox(width: double.infinity),
                               ),
-    
+
                               SizedBox(
                                 height: 26,
                                 child: ClipRRect(

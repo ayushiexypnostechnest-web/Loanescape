@@ -4,17 +4,17 @@ import 'package:loan_app/providers/theme_provider.dart';
 import 'package:loan_app/screens/splash_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:loan_app/providers/currency_provider.dart';
-import 'package:loan_app/screens/dashboard/Bottombar.dart';
 import 'package:loan_app/theme/app_colors.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
+    SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       systemNavigationBarColor: Colors.transparent,
-      systemNavigationBarDividerColor: Colors.transparent,
-      systemNavigationBarIconBrightness: Brightness.dark,
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarIconBrightness: Brightness.light,
     ),
   );
 

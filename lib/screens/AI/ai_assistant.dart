@@ -29,7 +29,7 @@ class _AiAssistantState extends State<AiAssistant>
 
   final TextEditingController promptController = TextEditingController();
 
-  static String apiKey = "AIzaSyCxSfPcEEaT989HhNSratlc22FXRcdIWr8";
+  static String apiKey = "AIzaSyCWw6ufvjmj6gjLjZtGDhwIR1M7G3FGkQU";
   late final GenerativeModel model;
   final List<ModelMessage> prompt = [];
   void _scrollToBottom() {
@@ -246,7 +246,6 @@ Always tailor your answer to the user’s specific question, and vary phrasing, 
     //     return true;
     //   },
     return Scaffold(
-      
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
@@ -332,7 +331,7 @@ Always tailor your answer to the user’s specific question, and vary phrasing, 
                                     ),
                                   ),
                                 ),
-    
+
                                 Expanded(
                                   child: Stack(
                                     children: [
@@ -374,7 +373,7 @@ Always tailor your answer to the user’s specific question, and vary phrasing, 
                                               ),
                                             );
                                           }
-    
+
                                           final message = prompt[index];
                                           return userPrompt(
                                             isPrompt: message.isPrompt,
@@ -394,7 +393,7 @@ Always tailor your answer to the user’s specific question, and vary phrasing, 
                         ),
                       ),
               ),
-    
+
               // Padding(
               //   padding: EdgeInsets.only(
               //     left: 15,
@@ -409,7 +408,7 @@ Always tailor your answer to the user’s specific question, and vary phrasing, 
               //       color: Theme.of(context).brightness == Brightness.dark
               //           ? AppDarkColors.textfeild
               //           : Color(0xffEEF1F4),
-    
+
               //       borderRadius: BorderRadius.circular(24),
               //       boxShadow: [
               //         BoxShadow(
@@ -451,9 +450,9 @@ Always tailor your answer to the user’s specific question, and vary phrasing, 
               //             ),
               //           ),
               //         ),
-    
+
               //         SizedBox(width: 6),
-    
+
               //         /// SEND / STOP BUTTON
               //         GestureDetector(
               //           onTap: () {
@@ -566,7 +565,7 @@ Always tailor your answer to the user’s specific question, and vary phrasing, 
               ),
             ),
           ),
-    
+
           if (showScrollButton)
             Positioned(
               right: 16,

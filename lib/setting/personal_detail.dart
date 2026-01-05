@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:loan_app/models/profile.dart';
@@ -34,7 +36,18 @@ class _PersonalDetailScreenState extends State<PersonalDetailScreen> {
   bool _hasChanges = false;
   late String _initialName;
   late String _initialEmail;
-  String? _initialImagePath;
+  File? _profileImage;
+  void showLoader(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // ❌ user can't tap outside
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+  }
+
+  void hideLoader(BuildContext context) {
+    Navigator.of(context, rootNavigator: true).pop();
+  }
 
   void _checkForChanges() {
     final profileChanged =
@@ -112,7 +125,6 @@ class _PersonalDetailScreenState extends State<PersonalDetailScreen> {
 
     _initialName = widget.name;
     _initialEmail = widget.email;
-    _initialImagePath = widget.imagePath;
 
     _nameController = TextEditingController(text: widget.name);
     _emailController = TextEditingController(text: widget.email);
@@ -130,20 +142,64 @@ class _PersonalDetailScreenState extends State<PersonalDetailScreen> {
     }
   }
 
-  File? _profileImage;
-
-  Future<void> _pickImage() async {
-    final XFile? pickedFile = await ImagePicker().pickImage(
-      source: ImageSource.gallery,
+  void showIOSLoader(BuildContext context) {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierLabel: "Loading",
+      barrierColor: Colors.black.withOpacity(0.25),
+      transitionDuration: const Duration(milliseconds: 150),
+      pageBuilder: (_, __, ___) {
+        return Center(
+          child: Container(
+            width: 90,
+            height: 90,
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.75),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Center(
+              child: CupertinoActivityIndicator(
+                radius: 14,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        );
+      },
     );
+  }
 
-    if (pickedFile != null) {
-      final savedImage = await savePickedImagePermanently(pickedFile);
+  void hideIOSLoader(BuildContext context) {
+    Navigator.of(context, rootNavigator: true).pop();
+  }
+
+  Future<void> onEditImageTap() async {
+    try {
+      HapticFeedback.mediumImpact();
+
+      showIOSLoader(context);
+
+      final picker = ImagePicker();
+
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+
+      hideIOSLoader(context);
+
+      if (image == null) return;
+
+      final savedImage = File(image.path);
 
       setState(() {
         _profileImage = savedImage;
         _hasChanges = true;
       });
+    } catch (e) {
+      hideIOSLoader(context);
+      debugPrint("Image pick error: $e");
     }
   }
 
@@ -167,6 +223,9 @@ class _PersonalDetailScreenState extends State<PersonalDetailScreen> {
                     alignment: Alignment.center,
                     children: [
                       InkWell(
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+
                         onTap: () {
                           Navigator.pop(context);
                         },
@@ -214,38 +273,41 @@ class _PersonalDetailScreenState extends State<PersonalDetailScreen> {
                   ),
                 ),
                 SizedBox(height: 50),
-                Center(
-                  child: Stack(
-                    alignment: Alignment.bottomRight,
-                    children: [
-                      CircleAvatar(
-                        radius: 36,
-                        backgroundColor: Colors.grey.shade200,
-                        child: ClipOval(
-                          child: _profileImage != null
-                              ? Image.file(
-                                  _profileImage!,
-                                  width: 72,
-                                  height: 72,
-                                  fit: BoxFit.cover,
-                                  gaplessPlayback: true,
-                                  errorBuilder: (_, __, ___) {
-                                    return SvgPicture.asset(
-                                      "assets/images/user.svg",
-                                      fit: BoxFit.cover,
-                                    );
-                                  },
-                                )
-                              : SvgPicture.asset(
-                                  "assets/images/user.svg",
-                                  fit: BoxFit.cover,
-                                ),
-                        ),
-                      ),
+                InkWell(
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
 
-                      GestureDetector(
-                        onTap: _pickImage,
-                        child: Container(
+                  onTap: onEditImageTap,
+                  child: Center(
+                    child: Stack(
+                      alignment: Alignment.bottomRight,
+                      children: [
+                        CircleAvatar(
+                          radius: 36,
+                          backgroundColor: Colors.grey.shade200,
+                          child: ClipOval(
+                            child: _profileImage != null
+                                ? Image.file(
+                                    _profileImage!,
+                                    width: 72,
+                                    height: 72,
+                                    fit: BoxFit.cover,
+                                    gaplessPlayback: true,
+                                    errorBuilder: (_, __, ___) {
+                                      return SvgPicture.asset(
+                                        "assets/images/user.svg",
+                                        fit: BoxFit.cover,
+                                      );
+                                    },
+                                  )
+                                : SvgPicture.asset(
+                                    "assets/images/user.svg",
+                                    fit: BoxFit.cover,
+                                  ),
+                          ),
+                        ),
+
+                        Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
                             color: AppColors.primary,
@@ -257,8 +319,8 @@ class _PersonalDetailScreenState extends State<PersonalDetailScreen> {
                             color: Colors.white,
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
 

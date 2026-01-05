@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_multi_formatter/formatters/formatter_utils.dart';
 import 'package:flutter_multi_formatter/formatters/money_input_enums.dart';
 import 'package:flutter_multi_formatter/formatters/money_input_formatter.dart';
 import 'package:flutter_svg/svg.dart';
@@ -34,6 +33,7 @@ class AddEditLoanSheet {
     final loanAmountFocus = FocusNode();
     final interestRateFocus = FocusNode();
     final durationFocus = FocusNode();
+    // (removed unused local flags)
 
     bool validateName = true;
     bool validateType = true;
@@ -41,7 +41,6 @@ class AddEditLoanSheet {
     bool validateRate = true;
     bool validateDuration = true;
     bool validateStartDate = true;
-
     String? selectedLoanType;
     String? selectedLoanIcon;
 
@@ -369,6 +368,10 @@ class AddEditLoanSheet {
                           readOnly: Platform.isIOS,
                           focusNode: loanAmountFocus,
                           nextFocus: interestRateFocus,
+                          errorText: validateAmount
+                              ? null
+                              : "Enter a valid loan amount",
+
                           keyboardType: TextInputType.number,
                           inputFormatters: [
                             MoneyInputFormatter(
@@ -391,7 +394,6 @@ class AddEditLoanSheet {
                                 }
                               : null,
                           onChanged: (v) {
-                            final clean = toNumericString(v);
                             loanAmount.text = v;
                             calculateEMIForModal();
                             recalculateEmi();
@@ -428,6 +430,17 @@ class AddEditLoanSheet {
                                               nextFocus: startMonthYearFocus,
                                               allowDecimal: true,
                                               onChanged: () {
+                                                final v = interestRate.text;
+
+                                                final isValid = RegExp(
+                                                  r'^\d{0,2}(\.\d{0,2})?$',
+                                                ).hasMatch(v);
+
+                                                setModalState(() {
+                                                  validateRate =
+                                                      v.isNotEmpty && isValid;
+                                                });
+
                                                 calculateEMIForModal();
                                                 recalculateEmi();
                                               },
@@ -559,6 +572,10 @@ class AddEditLoanSheet {
                                                   FocusNode();
                                               final FocusNode dummyNextFocus =
                                                   FocusNode();
+
+                                              bool showRateError = false;
+                                              bool showMonthYearError = false;
+
                                               await showDialog(
                                                 context: context,
                                                 builder: (context) {
@@ -577,44 +594,51 @@ class AddEditLoanSheet {
                                                               focusNode:
                                                                   rateFocus,
                                                               readOnly: true,
-                                                              decoration: InputDecoration(
-                                                                hintText:
+
+                                                              decoration:
+                                                                  inputDecoration(
                                                                     "Enter New Rate",
-                                                                border: OutlineInputBorder(
-                                                                  borderRadius:
-                                                                      BorderRadius.circular(
-                                                                        8,
+                                                                    suffix: Padding(
+                                                                      padding:
+                                                                          const EdgeInsets.only(
+                                                                            right:
+                                                                                8,
+                                                                          ),
+                                                                      child: Icon(
+                                                                        Icons
+                                                                            .percent,
+                                                                        size:
+                                                                            20,
+                                                                        color:
+                                                                            Theme.of(
+                                                                                  context,
+                                                                                ).brightness ==
+                                                                                Brightness.dark
+                                                                            ? AppDarkColors.white
+                                                                            : AppColors.black,
                                                                       ),
-                                                                ),
-                                                                contentPadding:
-                                                                    const EdgeInsets.symmetric(
-                                                                      horizontal:
-                                                                          12,
-                                                                      vertical:
-                                                                          10,
                                                                     ),
-                                                                suffixIcon: Padding(
-                                                                  padding:
-                                                                      const EdgeInsets.only(
-                                                                        right:
-                                                                            8,
-                                                                      ),
-                                                                  child: Icon(
-                                                                    Icons
-                                                                        .percent,
-                                                                    size: 20,
-                                                                    color:
-                                                                        Theme.of(
-                                                                              context,
-                                                                            ).brightness ==
-                                                                            Brightness.dark
-                                                                        ? AppDarkColors
-                                                                              .white
-                                                                        : AppColors
-                                                                              .black,
+                                                                  ).copyWith(
+                                                                    errorText:
+                                                                        showRateError
+                                                                        ? "Enter a valid rate"
+                                                                        : null,
                                                                   ),
-                                                                ),
-                                                              ),
+                                                              onChanged: (v) {
+                                                                final isValid =
+                                                                    RegExp(
+                                                                      r'^\d{0,2}(\.\d{0,2})?$',
+                                                                    ).hasMatch(
+                                                                      v,
+                                                                    );
+
+                                                                setDialogState(() {
+                                                                  showRateError =
+                                                                      v.isEmpty ||
+                                                                      !isValid;
+                                                                });
+                                                              },
+
                                                               onTap: () {
                                                                 openIOSNumberPad(
                                                                   context:
@@ -625,6 +649,24 @@ class AddEditLoanSheet {
                                                                       dummyNextFocus,
                                                                   allowDecimal:
                                                                       true,
+                                                                  onChanged: () {
+                                                                    final v = rateC
+                                                                        .text
+                                                                        .trim();
+
+                                                                    final isValid =
+                                                                        RegExp(
+                                                                          r'^\d{0,2}(\.\d{0,2})?$',
+                                                                        ).hasMatch(
+                                                                          v,
+                                                                        );
+
+                                                                    setDialogState(() {
+                                                                      showRateError =
+                                                                          v.isEmpty ||
+                                                                          !isValid;
+                                                                    });
+                                                                  },
                                                                 );
                                                               },
                                                             ),
@@ -632,7 +674,24 @@ class AddEditLoanSheet {
                                                             const SizedBox(
                                                               height: 12,
                                                             ),
-                                                            GestureDetector(
+
+                                                            TextField(
+                                                              controller:
+                                                                  monthYearC,
+                                                              readOnly: true,
+                                                              decoration:
+                                                                  inputDecoration(
+                                                                    "Select Month/Year",
+                                                                    suffix: const Icon(
+                                                                      Icons
+                                                                          .calendar_today,
+                                                                    ),
+                                                                  ).copyWith(
+                                                                    errorText:
+                                                                        showMonthYearError
+                                                                        ? "Select a month/year"
+                                                                        : null,
+                                                                  ),
                                                               onTap: () async {
                                                                 await pickMonthYear(
                                                                   context:
@@ -650,73 +709,12 @@ class AddEditLoanSheet {
                                                                       monthYearC
                                                                               .text =
                                                                           value;
+                                                                      showMonthYearError =
+                                                                          false;
                                                                     });
                                                                   },
                                                                 );
                                                               },
-
-                                                              child: Container(
-                                                                padding:
-                                                                    const EdgeInsets.symmetric(
-                                                                      horizontal:
-                                                                          12,
-                                                                      vertical:
-                                                                          14,
-                                                                    ),
-                                                                decoration: BoxDecoration(
-                                                                  color:
-                                                                      Theme.of(
-                                                                            context,
-                                                                          ).brightness ==
-                                                                          Brightness
-                                                                              .dark
-                                                                      ? AppDarkColors
-                                                                            .searchbar
-                                                                      : Colors
-                                                                            .grey
-                                                                            .shade200,
-                                                                  borderRadius:
-                                                                      BorderRadius.circular(
-                                                                        8,
-                                                                      ),
-                                                                ),
-                                                                child: Row(
-                                                                  mainAxisAlignment:
-                                                                      MainAxisAlignment
-                                                                          .spaceBetween,
-                                                                  children: [
-                                                                    Text(
-                                                                      monthYearC
-                                                                              .text
-                                                                              .isEmpty
-                                                                          ? "Select Month/Year"
-                                                                          : monthYearC.text,
-                                                                      style: TextStyle(
-                                                                        fontFamily:
-                                                                            'Lato',
-                                                                        fontSize:
-                                                                            14,
-                                                                        color:
-                                                                            monthYearC.text.isEmpty
-                                                                            ? Colors.grey.shade600
-                                                                            : Theme.of(
-                                                                                    context,
-                                                                                  ).brightness ==
-                                                                                  Brightness.dark
-                                                                            ? Colors.white
-                                                                            : Colors.black87,
-                                                                      ),
-                                                                    ),
-                                                                    Icon(
-                                                                      Icons
-                                                                          .calendar_today,
-                                                                      color: Colors
-                                                                          .grey
-                                                                          .shade600,
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
                                                             ),
                                                           ],
                                                         ),
@@ -732,24 +730,64 @@ class AddEditLoanSheet {
                                                           ),
                                                           ElevatedButton(
                                                             onPressed: () {
-                                                              if (rateC
-                                                                      .text
-                                                                      .isNotEmpty &&
+                                                              // Validation
+                                                              final rateText =
+                                                                  rateC.text
+                                                                      .trim();
+                                                              final monthYearText =
                                                                   monthYearC
                                                                       .text
-                                                                      .isNotEmpty) {
-                                                                setModalState(() {
-                                                                  rateChanges.add({
-                                                                    "monthYear":
-                                                                        monthYearC
-                                                                            .text,
-                                                                    "rate": double.parse(
-                                                                      rateC
-                                                                          .text,
+                                                                      .trim();
+
+                                                              setDialogState(() {
+                                                                showRateError =
+                                                                    rateText
+                                                                        .isEmpty ||
+                                                                    double.tryParse(
+                                                                          rateText,
+                                                                        ) ==
+                                                                        null;
+                                                                showMonthYearError =
+                                                                    monthYearText
+                                                                        .isEmpty;
+                                                              });
+
+                                                              if (showRateError ||
+                                                                  showMonthYearError)
+                                                                return;
+
+                                                            
+                                                              bool isDuplicate =
+                                                                  rateChanges.any(
+                                                                    (element) =>
+                                                                        element['monthYear'] ==
+                                                                        monthYearText,
+                                                                  );
+                                                              if (isDuplicate) {
+                                                                ScaffoldMessenger.of(
+                                                                  context,
+                                                                ).showSnackBar(
+                                                                  const SnackBar(
+                                                                    content: Text(
+                                                                      "This Month/Year already exists.",
                                                                     ),
-                                                                  });
-                                                                });
+                                                                  ),
+                                                                );
+                                                                return;
                                                               }
+
+                                                              // Add rate change
+                                                              setModalState(() {
+                                                                rateChanges.add({
+                                                                  "monthYear":
+                                                                      monthYearText,
+                                                                  "rate":
+                                                                      double.parse(
+                                                                        rateText,
+                                                                      ),
+                                                                });
+                                                              });
+
                                                               recalculateEmi();
                                                               Navigator.pop(
                                                                 context,
@@ -799,11 +837,6 @@ class AddEditLoanSheet {
                             ),
                             onTap: () async {
                               FocusScope.of(context).unfocus();
-
-                              final isDark =
-                                  Theme.of(context).brightness ==
-                                  Brightness.dark;
-
                               DateTime? picked = await showDatePicker(
                                 context: context,
                                 initialDate: DateTime.now(),
@@ -816,7 +849,6 @@ class AddEditLoanSheet {
                                   final isDark =
                                       Theme.of(context).brightness ==
                                       Brightness.dark;
-
                                   return Theme(
                                     data: Theme.of(context).copyWith(
                                       dialogTheme: DialogThemeData(
@@ -860,18 +892,6 @@ class AddEditLoanSheet {
                                   );
                                 },
                               );
-
-                              if (picked != null) {
-                                setModalState(() {
-                                  startMonthYear.text =
-                                      "${picked.day.toString().padLeft(2, '0')}/"
-                                      "${picked.month.toString().padLeft(2, '0')}/"
-                                      "${picked.year}";
-                                });
-                                FocusScope.of(
-                                  context,
-                                ).requestFocus(durationFocus);
-                              }
 
                               if (picked != null) {
                                 setModalState(() {
@@ -1105,6 +1125,15 @@ class AddEditLoanSheet {
   }
 }
 
+InputDecoration inputDecoration(String hint, {Widget? suffix}) {
+  return InputDecoration(
+    hintText: hint,
+    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    suffixIcon: suffix,
+  );
+}
+
 void openIOSNumberPad({
   required BuildContext context,
   required TextEditingController controller,
@@ -1164,7 +1193,7 @@ void openIOSNumberPad({
 
                     addDigit: (digit) {
                       setSheetState(() {
-                        if (digit == '.') return; // No decimal for loan amount
+                        if (digit == '.') return;
 
                         final raw = controller.text.replaceAll(
                           RegExp(r'[^0-9]'),
@@ -1197,6 +1226,8 @@ void openIOSNumberPad({
                           );
                         }
                       });
+
+                      onChanged?.call();
                     },
 
                     onEnter: () {
@@ -1216,7 +1247,11 @@ void openIOSNumberPad({
                       Icons.backspace_outlined,
                       color: isDark ? Colors.white70 : Colors.black87,
                     ),
-
+                    enterButtonTextStyle: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
                     enterButtonText: 'Done',
                   ),
                 ),
@@ -1383,42 +1418,53 @@ Future<void> pickMonthYear({
       return StatefulBuilder(
         builder: (context, setState) {
           return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             title: const Text("Select Month & Year"),
             content: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                DropdownButton<int>(
-                  value: selectedMonth,
-                  items: List.generate(12, (i) => i + 1)
-                      .map(
-                        (m) => DropdownMenuItem(
-                          value: m,
-                          child: Text(m.toString().padLeft(2, '0')),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (v) {
-                    setState(() {
-                      selectedMonth = v!;
-                    });
-                  },
+                SizedBox(
+                  width: 100,
+                  child: DropdownButtonFormField<int>(
+                    value: selectedMonth,
+                    isDense: true,
+                    menuMaxHeight: 200,
+                    decoration: _dropdownDecoration(context),
+
+                    items: List.generate(12, (i) => i + 1)
+                        .map(
+                          (m) => DropdownMenuItem(
+                            value: m,
+                            child: Text(m.toString().padLeft(2, '0')),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (v) => setState(() => selectedMonth = v!),
+                  ),
                 ),
+
                 const SizedBox(width: 12),
-                DropdownButton<int>(
-                  value: selectedYear,
-                  items: yearList
-                      .map(
-                        (y) => DropdownMenuItem(
-                          value: y,
-                          child: Text(y.toString()),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (v) {
-                    setState(() {
-                      selectedYear = v!;
-                    });
-                  },
+
+                SizedBox(
+                  width: 110,
+                  child: DropdownButtonFormField<int>(
+                    value: selectedYear,
+                    isDense: true,
+                    menuMaxHeight: 200,
+                    decoration: _dropdownDecoration(context),
+
+                    items: yearList
+                        .map(
+                          (y) => DropdownMenuItem(
+                            value: y,
+                            child: Text(y.toString()),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (v) => setState(() => selectedYear = v!),
+                  ),
                 ),
               ],
             ),
@@ -1432,7 +1478,7 @@ Future<void> pickMonthYear({
                   final value =
                       "${selectedMonth.toString().padLeft(2, '0')}/$selectedYear";
                   controller.text = value;
-                  if (onPicked != null) onPicked(value);
+                  onPicked?.call(value);
                   Navigator.pop(context);
                 },
                 child: const Text("OK"),
@@ -1445,17 +1491,22 @@ Future<void> pickMonthYear({
   );
 }
 
-List<int> calculateLoanYears(String start, String durationYears) {
-  final startParts = start.split("/");
-  int startYear = int.tryParse(startParts[2]) ?? DateTime.now().year;
-  int duration = int.tryParse(durationYears) ?? 0;
+InputDecoration _dropdownDecoration(BuildContext context) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
 
-  final endYear = startYear + duration - 1;
-
-  List<int> years = [];
-  for (int y = startYear; y <= endYear; y++) {
-    years.add(y);
-  }
-
-  return years;
+  return InputDecoration(
+    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: isDark ? Colors.white : Colors.black),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(
+        color: isDark ? Colors.white : Colors.black,
+        width: 1.5,
+      ),
+    ),
+  );
 }
