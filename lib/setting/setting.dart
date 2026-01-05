@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:loan_app/cryptography.dart';
 import 'package:loan_app/models/profile.dart';
+import 'package:loan_app/screens/primium_screen.dart';
 import 'package:loan_app/screens/sign_in.dart';
 import 'package:loan_app/setting/help_center.dart';
 import 'package:loan_app/setting/appearance.dart';
@@ -42,8 +43,25 @@ class _SettingPageState extends State<SettingPage> {
       confirmColor: Theme.of(context).brightness == Brightness.light
           ? const Color(0xFF001230)
           : const Color(0xFFAFCDFF),
-      onConfirm: () {
-        print("User confirmed delete");
+      onConfirm: () async {
+        final prefs = await SharedPreferences.getInstance();
+
+        await prefs.clear();
+
+        if (!context.mounted) return;
+
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const SignIn()),
+          (route) => false,
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Your account has been deleted"),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
       },
     );
   }
@@ -234,6 +252,14 @@ class _SettingPageState extends State<SettingPage> {
                       "assets/icons/i2.svg",
                       "Get Premium",
                       showDivider: false,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (ctx) => const PrimiumScreen(),
+                          ),
+                        );
+                      },
                     ),
                   ]),
 
@@ -246,7 +272,6 @@ class _SettingPageState extends State<SettingPage> {
                       showChevron: false,
                     ),
                   ]),
-
                   _sectionTitle("PREFERENCE"),
                   _sectionCard([
                     _settingsTile(

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:loan_app/screens/dashboard/add_edit_loan_sheet.dart';
@@ -43,6 +44,7 @@ class DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     loans = widget.loans;
+
     loadUserData();
   }
 
@@ -51,7 +53,6 @@ class DashboardScreenState extends State<DashboardScreen> {
 
     setState(() {
       userName = prefs.getString("name") ?? "User";
-
       final imagePath = prefs.getString("profile_image");
       if (imagePath != null && File(imagePath).existsSync()) {
         profileImage = File(imagePath);
@@ -302,113 +303,151 @@ class DashboardScreenState extends State<DashboardScreen> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
-                                builder: (ctx) => PrimiumScreen(),
+                              PageRouteBuilder(
+                                transitionDuration: const Duration(
+                                  milliseconds: 650,
+                                ),
+                                pageBuilder: (_, __, ___) =>
+                                    const PrimiumScreen(),
+                                transitionsBuilder: (_, animation, __, child) {
+                                  return FadeTransition(
+                                    opacity: animation,
+                                    child: child,
+                                  );
+                                },
                               ),
                             );
                           },
-                          child: Stack(
-                            children: [
-                              Container(
-                                height: 26,
-                                width: 85,
-                                alignment: Alignment.center,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                ),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(34),
-                                  color: Colors.white.withOpacity(0.3),
-                                  // boxShadow: [
-                                  //   BoxShadow(
-                                  //     color: Colors.black.withOpacity(0.08),
-                                  //     blurRadius: 6,
-                                  //     offset: const Offset(0, 2),
-                                  //   ),
-                                  // ],
-                                ),
-                                child: SizedBox(width: double.infinity),
-                              ),
-
-                              SizedBox(
-                                height: 26,
-                                child: ClipRRect(
-                                  borderRadius: BorderRadiusGeometry.circular(
-                                    100,
-                                  ),
-                                  child: BackdropFilter(
-                                    filter: ImageFilter.blur(
-                                      sigmaX: 15,
-                                      sigmaY: 15,
-                                    ),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(
-                                          100,
-                                        ),
-                                        border: GradientBoxBorder(
-                                          width: 1,
-                                          gradient: SweepGradient(
-                                            colors: [
-                                              const Color(
-                                                0xFF9C9C9C,
-                                              ).withOpacity(0.50),
-                                              const Color(
-                                                0xFF9C9C9C,
-                                              ).withOpacity(0.35),
-                                              const Color(
-                                                0xFFFFFFFF,
-                                              ).withOpacity(0.50),
-                                              const Color(
-                                                0xFFFFFFFF,
-                                              ).withOpacity(0.50),
-                                              const Color(
-                                                0xFF9C9C9C,
-                                              ).withOpacity(0.35),
-                                              const Color(0xFFF9F9F9),
-                                              const Color(
-                                                0xFFFFFFFF,
-                                              ).withOpacity(0.50),
-                                              const Color(
-                                                0xFFF9F9F9,
-                                              ).withOpacity(0.50),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Image.asset(
-                                            "assets/images/upgrade.png",
-                                            height: 14,
-                                          ),
-                                          const SizedBox(width: 6),
-                                          Text(
-                                            "Upgrade",
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              fontFamily: 'Lato',
-                                              fontWeight: FontWeight.w700,
-                                              color:
-                                                  Theme.of(
-                                                        context,
-                                                      ).brightness ==
-                                                      Brightness.dark
-                                                  ? AppDarkColors.white
-                                                  : AppColors.black,
+                          child: Hero(
+                            tag: 'premium-cta',
+                            flightShuttleBuilder:
+                                (
+                                  flightContext,
+                                  animation,
+                                  flightDirection,
+                                  fromHeroContext,
+                                  toHeroContext,
+                                ) {
+                                  return FadeTransition(
+                                    opacity: animation,
+                                    child: ScaleTransition(
+                                      scale:
+                                          Tween<double>(
+                                            begin: 0.95,
+                                            end: 1.0,
+                                          ).animate(
+                                            CurvedAnimation(
+                                              parent: animation,
+                                              curve: Curves.easeOut,
                                             ),
                                           ),
-                                        ],
+                                      child: toHeroContext.widget,
+                                    ),
+                                  );
+                                },
+                            child: Stack(
+                              children: [
+                                Container(
+                                  height: 26,
+                                  width: 85,
+                                  alignment: Alignment.center,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(34),
+                                    color: Colors.white.withOpacity(0.3),
+                                    // boxShadow: [
+                                    //   BoxShadow(
+                                    //     color: Colors.black.withOpacity(0.08),
+                                    //     blurRadius: 6,
+                                    //     offset: const Offset(0, 2),
+                                    //   ),
+                                    // ],
+                                  ),
+                                  child: SizedBox(width: double.infinity),
+                                ),
+
+                                SizedBox(
+                                  height: 26,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadiusGeometry.circular(
+                                      100,
+                                    ),
+                                    child: BackdropFilter(
+                                      filter: ImageFilter.blur(
+                                        sigmaX: 15,
+                                        sigmaY: 15,
+                                      ),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                            100,
+                                          ),
+                                          border: GradientBoxBorder(
+                                            width: 1,
+                                            gradient: SweepGradient(
+                                              colors: [
+                                                const Color(
+                                                  0xFF9C9C9C,
+                                                ).withOpacity(0.50),
+                                                const Color(
+                                                  0xFF9C9C9C,
+                                                ).withOpacity(0.35),
+                                                const Color(
+                                                  0xFFFFFFFF,
+                                                ).withOpacity(0.50),
+                                                const Color(
+                                                  0xFFFFFFFF,
+                                                ).withOpacity(0.50),
+                                                const Color(
+                                                  0xFF9C9C9C,
+                                                ).withOpacity(0.35),
+                                                const Color(0xFFF9F9F9),
+                                                const Color(
+                                                  0xFFFFFFFF,
+                                                ).withOpacity(0.50),
+                                                const Color(
+                                                  0xFFF9F9F9,
+                                                ).withOpacity(0.50),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Image.asset(
+                                              "assets/images/upgrade.png",
+                                              height: 14,
+                                            ),
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              "Upgrade",
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                fontFamily: 'Lato',
+                                                fontWeight: FontWeight.w700,
+                                                color:
+                                                    Theme.of(
+                                                          context,
+                                                        ).brightness ==
+                                                        Brightness.dark
+                                                    ? AppDarkColors.white
+                                                    : AppColors.black,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ],

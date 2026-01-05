@@ -63,6 +63,7 @@ dependencies:
   number_pad_keyboard: ^0.0.6
   circular_reveal_animation: ^2.0.2
   circular_theme_reveal: ^1.0.2
+  confetti: ^0.8.0
 
 
 dev_dependencies:

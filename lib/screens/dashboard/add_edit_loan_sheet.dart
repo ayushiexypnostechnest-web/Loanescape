@@ -1,13 +1,14 @@
 import 'dart:io';
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_multi_formatter/formatters/money_input_enums.dart';
 import 'package:flutter_multi_formatter/formatters/money_input_formatter.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:number_pad_keyboard/number_pad_keyboard.dart';
+
 import 'package:loan_app/theme/app_colors.dart';
-import 'package:number_pad_keyboard/number_pad_keyboard.dart'
-    show NumberPadKeyboard;
 import '../../data/loantype_data.dart';
 import '../../models/loan_model.dart';
 import '../../utils/loan_calculator.dart';
@@ -26,7 +27,7 @@ class AddEditLoanSheet {
     final TextEditingController monthlyEmi = TextEditingController();
     final TextEditingController startMonthYear = TextEditingController();
     final TextEditingController durationYears = TextEditingController();
-    final _formKey = GlobalKey<FormState>();
+    final formKey = GlobalKey<FormState>();
     final loanNameFocus = FocusNode();
     final loanTypeFocus = FocusNode();
     final startMonthYearFocus = FocusNode();
@@ -113,30 +114,6 @@ class AddEditLoanSheet {
                 });
               }
 
-              void calculateEMIForModal() {
-                final principal =
-                    double.tryParse(loanAmount.text.replaceAll(',', '')) ?? 0;
-                final rate = double.tryParse(interestRate.text) ?? 0;
-                final years = int.tryParse(durationYears.text) ?? 0;
-
-                if (principal > 0 && rate > 0 && years > 0) {
-                  final months = years * 12;
-                  final emi = LoanCalculator.calculateEmi(
-                    principal: principal,
-                    annualRate: rate,
-                    months: months,
-                  );
-
-                  setModalState(() {
-                    monthlyEmi.text = emi.toStringAsFixed(2);
-                  });
-                } else {
-                  setModalState(() {
-                    monthlyEmi.text = '';
-                  });
-                }
-              }
-
               return Padding(
                 padding: EdgeInsets.only(
                   left: 20,
@@ -145,7 +122,7 @@ class AddEditLoanSheet {
                   bottom: MediaQuery.of(context).viewInsets.bottom,
                 ),
                 child: Form(
-                  key: _formKey,
+                  key: formKey,
                   child: SingleChildScrollView(
                     controller: scrollController,
                     child: Column(
@@ -371,7 +348,6 @@ class AddEditLoanSheet {
                           errorText: validateAmount
                               ? null
                               : "Enter a valid loan amount",
-
                           keyboardType: TextInputType.number,
                           inputFormatters: [
                             MoneyInputFormatter(
@@ -385,9 +361,8 @@ class AddEditLoanSheet {
                                     context: context,
                                     controller: loanAmount,
                                     nextFocus: interestRateFocus,
-                                    allowDecimal: false,
+
                                     onChanged: () {
-                                      calculateEMIForModal();
                                       recalculateEmi();
                                     },
                                   );
@@ -395,7 +370,7 @@ class AddEditLoanSheet {
                               : null,
                           onChanged: (v) {
                             loanAmount.text = v;
-                            calculateEMIForModal();
+
                             recalculateEmi();
                           },
                         ),
@@ -428,7 +403,7 @@ class AddEditLoanSheet {
                                               context: context,
                                               controller: interestRate,
                                               nextFocus: startMonthYearFocus,
-                                              allowDecimal: true,
+
                                               onChanged: () {
                                                 final v = interestRate.text;
 
@@ -441,7 +416,6 @@ class AddEditLoanSheet {
                                                       v.isNotEmpty && isValid;
                                                 });
 
-                                                calculateEMIForModal();
                                                 recalculateEmi();
                                               },
                                             );
@@ -457,7 +431,6 @@ class AddEditLoanSheet {
                                         validateRate = v.isNotEmpty && isValid;
                                       });
 
-                                      calculateEMIForModal();
                                       recalculateEmi();
                                     },
 
@@ -593,8 +566,20 @@ class AddEditLoanSheet {
                                                               controller: rateC,
                                                               focusNode:
                                                                   rateFocus,
-                                                              readOnly: true,
-
+                                                              readOnly: Platform
+                                                                  .isIOS,
+                                                              keyboardType:
+                                                                  const TextInputType.numberWithOptions(
+                                                                    decimal:
+                                                                        true,
+                                                                  ),
+                                                              inputFormatters: [
+                                                                FilteringTextInputFormatter.allow(
+                                                                  RegExp(
+                                                                    r'^\d{0,2}(\.\d{0,2})?$',
+                                                                  ),
+                                                                ),
+                                                              ],
                                                               decoration:
                                                                   inputDecoration(
                                                                     "Enter New Rate",
@@ -624,51 +609,54 @@ class AddEditLoanSheet {
                                                                         ? "Enter a valid rate"
                                                                         : null,
                                                                   ),
-                                                              onChanged: (v) {
-                                                                final isValid =
-                                                                    RegExp(
-                                                                      r'^\d{0,2}(\.\d{0,2})?$',
-                                                                    ).hasMatch(
-                                                                      v,
-                                                                    );
 
-                                                                setDialogState(() {
-                                                                  showRateError =
-                                                                      v.isEmpty ||
-                                                                      !isValid;
-                                                                });
-                                                              },
+                                                              // ANDROID → normal keyboard
+                                                              onChanged:
+                                                                  Platform.isIOS
+                                                                  ? null
+                                                                  : (v) {
+                                                                      final isValid =
+                                                                          RegExp(
+                                                                            r'^\d{0,2}(\.\d{0,2})?$',
+                                                                          ).hasMatch(
+                                                                            v,
+                                                                          );
 
-                                                              onTap: () {
-                                                                openIOSNumberPad(
-                                                                  context:
-                                                                      context,
-                                                                  controller:
-                                                                      rateC,
-                                                                  nextFocus:
-                                                                      dummyNextFocus,
-                                                                  allowDecimal:
-                                                                      true,
-                                                                  onChanged: () {
-                                                                    final v = rateC
-                                                                        .text
-                                                                        .trim();
+                                                                      setDialogState(() {
+                                                                        showRateError =
+                                                                            v.isEmpty ||
+                                                                            !isValid;
+                                                                      });
+                                                                    },
 
-                                                                    final isValid =
-                                                                        RegExp(
-                                                                          r'^\d{0,2}(\.\d{0,2})?$',
-                                                                        ).hasMatch(
-                                                                          v,
-                                                                        );
+                                                              // iOS → custom number pad
+                                                              onTap:
+                                                                  Platform.isIOS
+                                                                  ? () {
+                                                                      openIOSNumberPad(
+                                                                        context:
+                                                                            context,
+                                                                        controller:
+                                                                            rateC,
+                                                                        nextFocus:
+                                                                            dummyNextFocus,
+                                                                        onChanged: () {
+                                                                          final v = rateC
+                                                                              .text
+                                                                              .trim();
+                                                                          final isValid = RegExp(
+                                                                            r'^\d{0,2}(\.\d{0,2})?$',
+                                                                          ).hasMatch(v);
 
-                                                                    setDialogState(() {
-                                                                      showRateError =
-                                                                          v.isEmpty ||
-                                                                          !isValid;
-                                                                    });
-                                                                  },
-                                                                );
-                                                              },
+                                                                          setDialogState(() {
+                                                                            showRateError =
+                                                                                v.isEmpty ||
+                                                                                !isValid;
+                                                                          });
+                                                                        },
+                                                                      );
+                                                                    }
+                                                                  : null,
                                                             ),
 
                                                             const SizedBox(
@@ -730,7 +718,7 @@ class AddEditLoanSheet {
                                                           ),
                                                           ElevatedButton(
                                                             onPressed: () {
-                                                              // Validation
+                                                            
                                                               final rateText =
                                                                   rateC.text
                                                                       .trim();
@@ -756,7 +744,6 @@ class AddEditLoanSheet {
                                                                   showMonthYearError)
                                                                 return;
 
-                                                            
                                                               bool isDuplicate =
                                                                   rateChanges.any(
                                                                     (element) =>
@@ -929,9 +916,8 @@ class AddEditLoanSheet {
                                     context: context,
                                     controller: durationYears,
                                     nextFocus: interestRateFocus,
-                                    allowDecimal: false,
+
                                     onChanged: () {
-                                      calculateEMIForModal();
                                       recalculateEmi();
                                     },
                                   );
@@ -945,7 +931,6 @@ class AddEditLoanSheet {
                               validateDuration = years >= 1 && years <= 50;
                             });
 
-                            calculateEMIForModal();
                             recalculateEmi();
                           },
                         ),
@@ -1079,7 +1064,7 @@ class AddEditLoanSheet {
                                       content: const Text(
                                         "Loan Saved Sucessfully",
                                       ),
-                                      backgroundColor: Color(0xff5A7863),
+                                      backgroundColor: AppColors.primary,
                                       behavior: SnackBarBehavior.floating,
                                       margin: const EdgeInsets.symmetric(
                                         horizontal: 20,
@@ -1138,7 +1123,6 @@ void openIOSNumberPad({
   required BuildContext context,
   required TextEditingController controller,
   required FocusNode nextFocus,
-  bool allowDecimal = false,
   VoidCallback? onChanged,
 }) {
   final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -1152,7 +1136,12 @@ void openIOSNumberPad({
     backgroundColor: Colors.transparent,
     builder: (sheetContext) {
       return StatefulBuilder(
-        builder: (context, setSheetState) {
+        builder: (_, setState) {
+          void _update(String value) {
+            controller.text = value;
+            onChanged?.call();
+          }
+
           return Container(
             height: 340,
             decoration: BoxDecoration(
@@ -1173,86 +1162,76 @@ void openIOSNumberPad({
                   ),
                 ),
 
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Text(
-                    controller.text.isEmpty ? "0" : controller.text,
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? Colors.white : Colors.black,
-                    ),
+                Text(
+                  controller.text.isEmpty ? "0" : controller.text,
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white : Colors.black,
                   ),
                 ),
 
-                const Divider(height: 1),
+                const Divider(height: 20),
 
                 Expanded(
                   child: NumberPadKeyboard(
                     backgroundColor: Colors.transparent,
 
                     addDigit: (digit) {
-                      setSheetState(() {
-                        if (digit == '.') return;
+                      if (digit == '.') return;
 
-                        final raw = controller.text.replaceAll(
-                          RegExp(r'[^0-9]'),
-                          '',
-                        );
-                        final updated = raw + digit.toString();
+                      final raw = controller.text.replaceAll(RegExp(r'\D'), '');
+                      final updated = raw + digit.toString();
 
-                        final formatter = MoneyInputFormatter(
-                          thousandSeparator: ThousandSeparator.Comma,
-                          mantissaLength: 0,
-                        );
+                      final formatter = MoneyInputFormatter(
+                        thousandSeparator: ThousandSeparator.Comma,
+                        mantissaLength: 0,
+                      );
 
-                        final formatted = formatter.formatEditUpdate(
-                          TextEditingValue(text: raw),
-                          TextEditingValue(text: updated),
-                        );
+                      final formatted = formatter.formatEditUpdate(
+                        TextEditingValue(text: raw),
+                        TextEditingValue(text: updated),
+                      );
 
-                        controller.value = formatted;
-                      });
-
-                      onChanged?.call();
+                      setState(() => _update(formatted.text));
                     },
 
                     backspace: () {
-                      setSheetState(() {
-                        if (controller.text.isNotEmpty) {
-                          controller.text = controller.text.substring(
-                            0,
-                            controller.text.length - 1,
-                          );
-                        }
-                      });
-
-                      onChanged?.call();
+                      if (controller.text.isNotEmpty) {
+                        setState(
+                          () => _update(
+                            controller.text.substring(
+                              0,
+                              controller.text.length - 1,
+                            ),
+                          ),
+                        );
+                      }
                     },
 
                     onEnter: () {
                       Navigator.pop(sheetContext);
-
-                      Future.delayed(const Duration(milliseconds: 150), () {
-                        FocusScope.of(rootContext).requestFocus(nextFocus);
-                      });
+                      Future.delayed(
+                        const Duration(milliseconds: 150),
+                        () =>
+                            FocusScope.of(rootContext).requestFocus(nextFocus),
+                      );
                     },
 
                     numberStyle: TextStyle(
                       fontSize: 26,
                       color: isDark ? Colors.white : Colors.black,
                     ),
-
                     deleteIcon: Icon(
                       Icons.backspace_outlined,
                       color: isDark ? Colors.white70 : Colors.black87,
                     ),
+                    enterButtonText: 'Done',
                     enterButtonTextStyle: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: isDark ? Colors.white : Colors.black,
                     ),
-                    enterButtonText: 'Done',
                   ),
                 ),
               ],
@@ -1280,113 +1259,86 @@ Widget buildInput(
   FocusNode? nextFocus,
   TextInputAction? textInputAction,
 }) {
-  const double fieldHeight = 52;
-
+  final isDark = Theme.of(context).brightness == Brightness.dark;
   final hasError = errorText != null;
 
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Container(
-        height: fieldHeight,
+        height: 52,
         margin: EdgeInsets.only(bottom: hasError ? 4 : 10),
         decoration: BoxDecoration(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? AppDarkColors.searchbar
-              : AppColors.inputBg,
+          color: isDark ? AppDarkColors.searchbar : AppColors.inputBg,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Padding(
-          padding: const EdgeInsets.only(left: 10),
-          child: TextField(
-            focusNode: focusNode,
-            textInputAction: textInputAction,
-
-            onSubmitted: (_) {
-              if (nextFocus != null) {
-                FocusScope.of(context).requestFocus(nextFocus);
-              } else {
-                FocusScope.of(context).unfocus();
-              }
-            },
-
-            cursorColor: Theme.of(context).brightness == Brightness.dark
-                ? AppDarkColors.white
-                : AppColors.black,
-            controller: controller,
-            readOnly: readOnly || onTap != null,
-            onTap: onTap,
-            onChanged: onChanged,
-            keyboardType: keyboardType ?? TextInputType.text,
-            inputFormatters: inputFormatters,
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w400,
-                fontFamily: 'Lato',
-                color: Color(0xff797979),
-              ),
-              border: InputBorder.none,
-
-              suffixIcon: Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child:
-                    suffixIcon ??
-                    (suffixText == null
-                        ? null
-                        : Center(
-                            child: Text(
-                              suffixText,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontFamily: 'Lato',
-                                color: Color(0xff797979),
-                              ),
+        padding: const EdgeInsets.only(left: 10),
+        child: TextField(
+          controller: controller,
+          focusNode: focusNode,
+          textInputAction: textInputAction,
+          readOnly: readOnly || onTap != null,
+          keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
+          onTap: onTap,
+          onChanged: onChanged,
+          onSubmitted: (_) => nextFocus != null
+              ? FocusScope.of(context).requestFocus(nextFocus)
+              : FocusScope.of(context).unfocus(),
+          cursorColor: isDark ? AppDarkColors.white : AppColors.black,
+          decoration: InputDecoration(
+            hintText: hint,
+            contentPadding: EdgeInsets.only(top: 10),
+            hintStyle: const TextStyle(
+              fontSize: 12,
+              fontFamily: 'Lato',
+              color: Color(0xff797979),
+            ),
+            border: InputBorder.none,
+            suffixIcon: Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child:
+                  suffixIcon ??
+                  (suffixText == null
+                      ? null
+                      : Center(
+                          child: Text(
+                            suffixText,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontFamily: 'Lato',
+                              color: Color(0xff797979),
                             ),
-                          )),
-              ),
-
-              suffixIconConstraints: const BoxConstraints(
-                minWidth: 0,
-                minHeight: 0,
-              ),
+                          ),
+                        )),
             ),
           ),
         ),
       ),
       if (hasError)
-        Padding(
-          padding: const EdgeInsets.only(left: 0, bottom: 8),
-          child: Text(
-            errorText,
-            style: const TextStyle(
-              color: Colors.red,
-              fontSize: 11,
-              fontFamily: 'Lato',
-            ),
+        Text(
+          errorText!,
+          style: const TextStyle(
+            color: Colors.red,
+            fontSize: 11,
+            fontFamily: 'Lato',
           ),
         ),
     ],
   );
 }
 
-Widget buildLabel(String text) {
-  const double labelSpacing = 6;
-
-  return Padding(
-    padding: const EdgeInsets.only(bottom: labelSpacing),
-    child: Text(
-      text,
-      style: TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w400,
-        fontFamily: 'Lato',
-        color: Color(0xff495057),
-      ),
+Widget buildLabel(String text) => Padding(
+  padding: const EdgeInsets.only(bottom: 6),
+  child: Text(
+    text,
+    style: const TextStyle(
+      fontSize: 14,
+      fontFamily: 'Lato',
+      color: Color(0xff495057),
     ),
-  );
-}
+  ),
+);
 
 Future<void> pickMonthYear({
   required BuildContext context,

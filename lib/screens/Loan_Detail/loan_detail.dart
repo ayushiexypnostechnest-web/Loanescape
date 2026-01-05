@@ -246,7 +246,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
 
     // Contributions for current month
     final double monthlyRate = annualRate / 12 / 100;
-  // Outstanding principal approximation
+    // Outstanding principal approximation
     final double outstandingPrincipal = max(
       0,
       principal - (paidEmi - interestPaid),
@@ -260,7 +260,6 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
 
     // Principal part of EMI
     final double principalContribution = max(0, emi - interestContribution);
-
 
     // Remaining duration
     final int yearsLeft = remainingMonths ~/ 12;

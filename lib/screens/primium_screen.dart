@@ -82,37 +82,43 @@ class _PrimiumScreenState extends State<PrimiumScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          height: 26,
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          decoration: BoxDecoration(
-                            color: Color(0xffFFFBEB),
-                            borderRadius: BorderRadius.circular(34),
-                            border: GradientBoxBorder(
-                              width: 1,
-                              gradient: LinearGradient(
-                                colors: [Color(0xFFFE7D0F), Color(0xFFFDB22B)],
-                              ),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Image.asset(
-                                "assets/images/upgrade.png",
-                                height: 14,
-                              ),
-                              const SizedBox(width: 6),
-                              const Text(
-                                "PRO MEMBER",
-                                style: TextStyle(
-                                  fontSize: 8,
-                                  fontFamily: 'Lato',
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xffFFB539),
+                        Hero(
+                          tag: 'premium-bg',
+                          child: Container(
+                            height: 26,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: Color(0xffFFFBEB),
+                              borderRadius: BorderRadius.circular(34),
+                              border: GradientBoxBorder(
+                                width: 1,
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Color(0xFFFE7D0F),
+                                    Color(0xFFFDB22B),
+                                  ],
                                 ),
                               ),
-                            ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Image.asset(
+                                  "assets/images/upgrade.png",
+                                  height: 14,
+                                ),
+                                const SizedBox(width: 6),
+                                const Text(
+                                  "PRO MEMBER",
+                                  style: TextStyle(
+                                    fontSize: 8,
+                                    fontFamily: 'Lato',
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xffFFB539),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
 
