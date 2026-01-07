@@ -718,7 +718,6 @@ class AddEditLoanSheet {
                                                           ),
                                                           ElevatedButton(
                                                             onPressed: () {
-                                                            
                                                               final rateText =
                                                                   rateC.text
                                                                       .trim();
@@ -1046,7 +1045,12 @@ class AddEditLoanSheet {
                                         "Loan Updated Sucessfully",
                                       ),
                                       behavior: SnackBarBehavior.floating,
-                                      backgroundColor: Color(0xff5A7863),
+                                      backgroundColor:
+                                          Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? AppDarkColors.primary
+                                          : Color(0xff5A7863),
+
                                       margin: const EdgeInsets.symmetric(
                                         horizontal: 20,
                                         vertical: 10,
@@ -1061,10 +1065,12 @@ class AddEditLoanSheet {
                                   onSave(loanModel);
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: const Text(
-                                        "Loan Saved Sucessfully",
-                                      ),
-                                      backgroundColor: AppColors.primary,
+                                      content: Text("Loan Saved Sucessfully"),
+                                      backgroundColor:
+                                          Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? AppDarkColors.primary
+                                          : AppColors.primary,
                                       behavior: SnackBarBehavior.floating,
                                       margin: const EdgeInsets.symmetric(
                                         horizontal: 20,

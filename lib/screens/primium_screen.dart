@@ -320,42 +320,37 @@ Widget _planCard({
         borderRadius: BorderRadius.circular(18),
         border: isSelected
             ? GradientBoxBorder(
-                width: 1.6,
+                width: 1,
                 gradient: SweepGradient(
                   center: Alignment.center,
-                  colors: [
-                    const Color(0xFF1F2D3A).withOpacity(0.70),
-                    const Color(0xFF1F2D3A).withOpacity(0.70),
-                    const Color(0xFFD7F2FF).withOpacity(0.70),
-                    const Color(0xFFD7F2FF).withOpacity(0.70),
-                    const Color(0xFF1F2D3A).withOpacity(0.70),
-                    const Color(0xFFD7F2FF).withOpacity(0.70),
-                    const Color(0xFFD7F2FF).withOpacity(0.70),
-                    const Color(0xFFD7F2FF).withOpacity(0.70),
 
-                    const Color(0xFFA8E3FF),
+                  startAngle: -2.0,
+
+                  colors: [
+                    const Color(0xFF1F2D3A).withOpacity(0.8),
+                    const Color(0xFF1F2D3A).withOpacity(0.7),
+                    const Color(0xFFD7F2FF).withOpacity(0.8),
+                    const Color(0xFFD7F2FF).withOpacity(0.7),
+                    const Color(0xFF1F2D3A).withOpacity(0.9),
+                    const Color(0xFFD7F2FF).withOpacity(0.8),
+                    const Color(0xFFD7F2FF).withOpacity(0.7),
+                    const Color(0xFFA8E3FF).withOpacity(1.0),
+                    const Color(0xFFA8E3FF).withOpacity(0.9),
                   ],
-                  stops: [0.03, 0.09, 0.17, 0.30, 0.52, 0.58, 0.80, 0.91, 1.0],
+                  stops: const [
+                    0.0,
+                    0.05,
+                    0.12,
+                    0.25,
+                    0.45,
+                    0.55,
+                    0.75,
+                    0.88,
+                    1.0,
+                  ],
                 ),
               )
-            : GradientBoxBorder(
-                width: 1.6,
-                gradient: SweepGradient(
-                  colors: [
-                    const Color(0xFF1F2D3A).withOpacity(0.70),
-                    const Color(0xFF1F2D3A).withOpacity(0.70),
-                    const Color(0xFFD7F2FF).withOpacity(0.100),
-                    const Color(0xFFD7F2FF).withOpacity(0.100),
-                    const Color(0xFF1F2D3A).withOpacity(0.70),
-                    const Color(0xFFD7F2FF).withOpacity(0.100),
-                    const Color(0xFFD7F2FF).withOpacity(0.100),
-                    const Color(0xFFD7F2FF).withOpacity(0.100),
-
-                    const Color(0xFFA8E3FF),
-                  ],
-                  stops: [0.03, 0.09, 0.17, 0.30, 0.52, 0.58, 0.80, 0.91, 1.0],
-                ),
-              ),
+            : Border.all(color: Color(0xff5D5C5C)),
       ),
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -655,26 +650,7 @@ class GlassContainer extends StatelessWidget {
     return Container(
       height: height,
       width: width,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        border: GradientBoxBorder(
-          width: 1.2,
-          gradient: SweepGradient(
-            center: Alignment.center,
-            colors: [
-              const Color(0xFF1F2D3A).withOpacity(0.70),
-              const Color(0xFF1F2D3A).withOpacity(0.70),
-              const Color(0xFFA8E3FF),
-              const Color(0xFFA8E3FF),
-              const Color(0xFF1F2D3A).withOpacity(0.70),
-              const Color(0xFFA8E3FF),
-              const Color(0xFFA8E3FF),
-              const Color(0xFFA8E3FF),
-            ],
-            stops: [0.0, 0.15, 0.3, 0.5, 0.65, 0.8, 0.9, 1.0],
-          ),
-        ),
-      ),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: BackdropFilter(
@@ -683,8 +659,8 @@ class GlassContainer extends StatelessWidget {
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage("assets/images/glass.png"),
-                fit: BoxFit.cover,
+                image: AssetImage("assets/images/glasss.png"),
+                fit: BoxFit.fill,
               ),
 
               borderRadius: BorderRadius.circular(20),

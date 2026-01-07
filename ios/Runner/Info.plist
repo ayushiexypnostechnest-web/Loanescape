@@ -2,11 +2,25 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-<key>NSPhotoLibraryUsageDescription</key>
-<string>This app needs photo library access.</string>
-<key>NSCameraUsageDescription</key>
-<string>This app needs camera access.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+	<dict>
+		<key>CFBundleURLSchemes</key>
+		<array>
+		<string>com.googleusercontent.apps.192018092754-vsrg0oc1cpefs70oh3nu88mhj265cf75</string>
+		</array>
+	</dict>
+	</array>
+		<key>GIDClientID</key>
+		<string>192018092754-vsrg0oc1cpefs70oh3nu88mhj265cf75.apps.googleusercontent.com</string>
 
+		<key>GIDServerClientID</key>
+		<string>192018092754-1099ftv3ss5sqtcfuhrbdlls0dvbqvvm.apps.googleusercontent.com</string>
+
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs photo library access.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs camera access.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

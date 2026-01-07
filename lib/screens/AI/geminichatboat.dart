@@ -44,7 +44,6 @@ class _GeminichatboatState extends State<Geminichatboat> {
     }
   }
 
- 
   String _buildLoanContext() {
     final loan = widget.loan;
 

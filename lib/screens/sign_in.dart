@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:loan_app/screens/dashboard/Bottombar.dart';
 import 'package:loan_app/screens/forgetpassword.dart';
 import 'package:loan_app/screens/sign_up.dart';
+import 'package:loan_app/services/google_signin.dart';
 import 'package:loan_app/theme/app_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -15,12 +16,29 @@ class SignIn extends StatefulWidget {
 }
 
 class _SignInState extends State<SignIn> {
+  String? _emailError;
+  String? _passwordError;
+
   bool _isPasswordVisible = false;
   final emailFocus = FocusNode();
   final passwordFocus = FocusNode();
 
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  Future<void> _handleGoogleLogin() async {
+    final user = await GoogleSignin.login();
+    if (user == null) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString("name", user.displayName ?? "");
+    await prefs.setString("email", user.email);
+    await prefs.setBool("isLoggedIn", true);
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const DashboardBottomBar()),
+    );
+  }
 
   void _signIn() async {
     if (_validate()) {
@@ -33,15 +51,19 @@ class _SignInState extends State<SignIn> {
           passwordController.text == savedPassword) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text(
+            content: Text(
               "Login Successful",
               style: TextStyle(
                 fontWeight: FontWeight.w500,
-                color: Colors.white,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppDarkColors.card
+                    : AppColors.white,
               ),
             ),
             behavior: SnackBarBehavior.floating,
-            backgroundColor: AppColors.primary,
+            backgroundColor: Theme.of(context).brightness == Brightness.dark
+                ? AppDarkColors.primary
+                : AppColors.primary,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -57,15 +79,19 @@ class _SignInState extends State<SignIn> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text(
+            content: Text(
               "Invalid Email or Password",
               style: TextStyle(
                 fontWeight: FontWeight.w500,
-                color: Colors.white,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppDarkColors.card
+                    : AppColors.white,
               ),
             ),
             behavior: SnackBarBehavior.floating,
-            backgroundColor: AppColors.primary,
+            backgroundColor: Theme.of(context).brightness == Brightness.dark
+                ? AppDarkColors.primary
+                : AppColors.primary,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -78,50 +104,28 @@ class _SignInState extends State<SignIn> {
   }
 
   bool _validate() {
-    final email = emailController.text.trim();
+    setState(() {
+      _emailError = null;
+      _passwordError = null;
+    });
 
+    final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
     if (email.isEmpty) {
-      _showError("Please enter your Email");
-      return false;
+      _emailError = "Email is required";
+    } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
+      _emailError = "Enter a valid email";
     }
 
     if (password.isEmpty) {
-      _showError("Please enter your password");
-      return false;
+      _passwordError = "Password is required";
+    } else if (password.length < 6) {
+      _passwordError = "Password must be at least 6 characters";
     }
 
-    if (password.length < 6) {
-      _showError("Password must be at least 6 characters");
-      return false;
-    }
-
-    return true;
-  }
-
-  void _showError(String message) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style: TextStyle(
-            color: isDark ? Colors.black : Colors.white,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: isDark ? Colors.white : Colors.black,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 10,
-        ), // margin from screen edges
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    setState(() {});
+    return _emailError == null && _passwordError == null;
   }
 
   @override
@@ -191,6 +195,7 @@ class _SignInState extends State<SignIn> {
                   SizedBox(height: 13),
                   _inputField(
                     "Enter Your Email",
+                    errorText: _emailError,
                     controller: emailController,
                     focusNode: emailFocus,
                     nextFocus: passwordFocus,
@@ -204,6 +209,7 @@ class _SignInState extends State<SignIn> {
                     "*********",
                     controller: passwordController,
                     isPassword: true,
+                    errorText: _passwordError,
                     focusNode: passwordFocus,
                   ),
 
@@ -279,7 +285,7 @@ class _SignInState extends State<SignIn> {
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 8),
                           child: Text(
-                            "or sign up with",
+                            "Or",
                             style: TextStyle(fontFamily: 'Lato'),
                           ),
                         ),
@@ -294,10 +300,8 @@ class _SignInState extends State<SignIn> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       _socialIcon(context, "assets/images/google.png"),
-                      const SizedBox(width: 25),
+                      const SizedBox(width: 20),
                       _socialIcon(context, "assets/images/apple.png"),
-                      const SizedBox(width: 25),
-                      _socialIcon(context, "assets/images/facebook.png"),
                     ],
                   ),
                   const SizedBox(height: 30),
@@ -376,64 +380,87 @@ class _SignInState extends State<SignIn> {
     bool isPassword = false,
     FocusNode? focusNode,
     FocusNode? nextFocus,
+    String? errorText,
+
     TextInputAction? textInputAction,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 30),
-      child: Container(
-        height: 50,
-        decoration: BoxDecoration(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? AppDarkColors.textfeild
-              : Color(0xFFE9ECEF),
-
-          borderRadius: BorderRadius.circular(10),
-        ),
-        padding: const EdgeInsets.only(left: 15),
-        alignment: Alignment.centerLeft,
-        child: TextField(
-          focusNode: focusNode,
-          textInputAction: textInputAction ?? TextInputAction.next,
-          onEditingComplete: () {
-            if (nextFocus != null) {
-              FocusScope.of(context).requestFocus(nextFocus);
-            } else {
-              FocusScope.of(context).unfocus(); // last field
-            }
-          },
-          controller: controller,
-          cursorColor: Theme.of(context).brightness == Brightness.dark
-              ? AppDarkColors.white
-              : Colors.black,
-          obscureText: isPassword ? !_isPasswordVisible : obscure,
-          decoration: InputDecoration(
-            border: InputBorder.none,
-            hintText: hint,
-            hintStyle: GoogleFonts.inter(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            height: 50,
+            decoration: BoxDecoration(
               color: Theme.of(context).brightness == Brightness.dark
-                  ? Color(0xff646464)
-                  : Colors.black87,
-              fontSize: 14,
+                  ? AppDarkColors.textfeild
+                  : Color(0xFFE9ECEF),
+
+              borderRadius: BorderRadius.circular(10),
+              border: errorText != null
+                  ? Border.all(color: Colors.red, width: 1)
+                  : null,
             ),
-            suffixIcon: isPassword
-                ? IconButton(
-                    icon: Icon(
-                      _isPasswordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                      color: isDark ? Colors.white : Colors.black,
-                      size: 20,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _isPasswordVisible = !_isPasswordVisible;
-                      });
-                    },
-                  )
-                : null,
+            padding: const EdgeInsets.only(left: 15),
+            alignment: Alignment.center,
+            child: TextField(
+              focusNode: focusNode,
+              textInputAction: textInputAction ?? TextInputAction.next,
+              onEditingComplete: () {
+                if (nextFocus != null) {
+                  FocusScope.of(context).requestFocus(nextFocus);
+                } else {
+                  FocusScope.of(context).unfocus(); // last field
+                }
+              },
+              controller: controller,
+              cursorColor: Theme.of(context).brightness == Brightness.dark
+                  ? AppDarkColors.white
+                  : Colors.black,
+              obscureText: isPassword ? !_isPasswordVisible : obscure,
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                hintText: hint,
+                hintStyle: TextStyle(
+                  fontFamily: 'Lato',
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Color(0xff646464)
+                      : Colors.black87,
+                  fontSize: 14,
+                ),
+                suffixIcon: isPassword
+                    ? IconButton(
+                        icon: Icon(
+                          _isPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                          color: isDark ? Colors.white : Colors.black,
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isPasswordVisible = !_isPasswordVisible;
+                          });
+                        },
+                      )
+                    : null,
+              ),
+            ),
           ),
-        ),
+          if (errorText != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 6, left: 6),
+              child: Text(
+                errorText,
+                style: const TextStyle(
+                  color: Colors.red,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -442,20 +469,27 @@ class _SignInState extends State<SignIn> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isApple = path.contains("apple");
 
-    return Container(
-      height: 48,
-      width: 48,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(50),
-        border: Border.all(
-          color: isDark ? const Color(0xFFC7C7C7) : Colors.black26,
+    return GestureDetector(
+      onTap: () {
+        if (path.contains("google")) {
+          _handleGoogleLogin();
+        }
+      },
+      child: Container(
+        height: 48,
+        width: 48,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(50),
+          border: Border.all(
+            color: isDark ? const Color(0xFFC7C7C7) : Colors.black26,
+          ),
         ),
-      ),
-      child: Center(
-        child: Image.asset(
-          path,
-          height: 24,
-          color: (isDark && isApple) ? Colors.white : null,
+        child: Center(
+          child: Image.asset(
+            path,
+            height: 24,
+            color: (isDark && isApple) ? Colors.white : null,
+          ),
         ),
       ),
     );

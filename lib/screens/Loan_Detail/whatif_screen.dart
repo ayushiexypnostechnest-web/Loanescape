@@ -80,7 +80,7 @@ class _WhatifScreenState extends State<WhatifScreen> {
                                           ? AppDarkColors.primary
                                           : AppColors.primary,
                                     ),
-                                    const SizedBox(width: 4),
+                                    const SizedBox(width: 5),
                                     Text(
                                       "Loan Information",
                                       style: TextStyle(

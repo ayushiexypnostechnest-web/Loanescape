@@ -6,6 +6,7 @@ import 'package:loan_app/cryptography.dart';
 import 'package:loan_app/models/profile.dart';
 import 'package:loan_app/screens/primium_screen.dart';
 import 'package:loan_app/screens/sign_in.dart';
+import 'package:loan_app/services/google_signin.dart';
 import 'package:loan_app/setting/help_center.dart';
 import 'package:loan_app/setting/appearance.dart';
 import 'package:loan_app/setting/currency.dart';
@@ -44,8 +45,12 @@ class _SettingPageState extends State<SettingPage> {
           ? const Color(0xFF001230)
           : const Color(0xFFAFCDFF),
       onConfirm: () async {
-        final prefs = await SharedPreferences.getInstance();
+        // 🔥 VERY IMPORTANT
+        try {
+          await GoogleSignin.disconnect();
+        } catch (_) {}
 
+        final prefs = await SharedPreferences.getInstance();
         await prefs.clear();
 
         if (!context.mounted) return;
@@ -70,13 +75,15 @@ class _SettingPageState extends State<SettingPage> {
     showPlatformDialog(
       context: context,
       title: "Sign Out?",
-      message: "You can sign back in anytime to continue managing your EMIs.",
+      message: "You can sign back in anytime.",
       confirmText: "Sign Out",
       assetIcon: "assets/images/sign_out.svg",
       confirmColor: const Color(0xffBC0101),
       onConfirm: () async {
-        final prefs = await SharedPreferences.getInstance();
+        // Keep Google session (optional)
+        await GoogleSignin.logout();
 
+        final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('isLoggedIn', false);
 
         if (!context.mounted) return;

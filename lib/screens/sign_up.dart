@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:loan_app/screens/dashboard/Bottombar.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:loan_app/screens/sign_in.dart';
+import 'package:loan_app/services/google_signin.dart';
 
 import 'package:loan_app/theme/app_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,16 +15,38 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
+  String? _nameError;
+  String? _emailError;
+  String? _passwordError;
+  String? _confirmPasswordError;
+  String? _termsError;
   bool _isPasswordVisible = false;
   bool agree = false;
-  TextEditingController nameController = TextEditingController();
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
-  TextEditingController confirmPasswordController = TextEditingController();
   final nameFocus = FocusNode();
   final emailFocus = FocusNode();
   final passwordFocus = FocusNode();
   final confirmPasswordFocus = FocusNode();
+
+  TextEditingController nameController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+  TextEditingController confirmPasswordController = TextEditingController();
+
+  //FOR GOOGLESIGNIN
+  Future<void> _handleGoogleLogin() async {
+    final user = await GoogleSignin.login();
+
+    if (user == null) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString("name", user.displayName ?? "");
+    await prefs.setString("email", user.email);
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const DashboardBottomBar()),
+    );
+  }
 
   //Shared Prefrence
   Future<void> _saveData() async {
@@ -33,12 +58,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text(
+          content: Text(
             "Account Created Sucessfully",
-            style: TextStyle(fontWeight: FontWeight.w500, color: Colors.white),
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppDarkColors.white
+                  : AppColors.white,
+            ),
           ),
           behavior: SnackBarBehavior.floating,
-          backgroundColor: AppColors.primary,
+          backgroundColor: Theme.of(context).brightness == Brightness.dark
+              ? AppDarkColors.primary
+              : AppColors.primary,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -56,83 +88,56 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   //FORM VALIDATION
   bool _validate() {
+    setState(() {
+      _nameError = null;
+      _emailError = null;
+      _passwordError = null;
+      _confirmPasswordError = null;
+      _termsError = null;
+    });
+
     final name = nameController.text.trim();
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
+    final confirmPassword = confirmPasswordController.text.trim();
 
     if (name.isEmpty) {
-      _showError("Please enter your name");
-      return false;
+      _nameError = "Name is required";
     }
 
     if (email.isEmpty) {
-      _showError("Please enter your email");
-      return false;
-    }
-    if (confirmPasswordController.text.trim().isEmpty) {
-      _showError("Please confirm your password");
-      return false;
-    }
-
-    if (passwordController.text.trim() !=
-        confirmPasswordController.text.trim()) {
-      _showError("Passwords do not match");
-      return false;
-    }
-
-    // Email format validation
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegex.hasMatch(email)) {
-      _showError("Please enter a valid email");
-      return false;
+      _emailError = "Email is required";
+    } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
+      _emailError = "Enter a valid email";
     }
 
     if (password.isEmpty) {
-      _showError("Please enter your password");
-      return false;
+      _passwordError = "Password is required";
+    } else if (password.length < 6) {
+      _passwordError = "Password must be at least 6 characters";
     }
 
-    if (password.length < 6) {
-      _showError("Password must be at least 6 characters");
-      return false;
+    if (confirmPassword.isEmpty) {
+      _confirmPasswordError = "Confirm your password";
+    } else if (password != confirmPassword) {
+      _confirmPasswordError = "Passwords do not match";
     }
 
     if (!agree) {
-      _showError("Please agree to Terms & Conditions");
-      return false;
+      _termsError = "Please accept Terms & Conditions";
     }
 
-    return true;
-  }
-
-  void _showError(String message) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style: TextStyle(
-            color: isDark ? Colors.black : Colors.white,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        behavior: SnackBarBehavior.floating, // makes it floating
-        backgroundColor: isDark ? Colors.white : Colors.black,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12), // rounded corners
-        ),
-        margin: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 10,
-        ), // margin from screen edges
-        duration: const Duration(seconds: 2), // how long it stays
-      ),
-    );
+    setState(() {});
+    return _nameError == null &&
+        _emailError == null &&
+        _passwordError == null &&
+        _confirmPasswordError == null &&
+        _termsError == null;
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       backgroundColor: Theme.of(context).brightness == Brightness.dark
           ? AppDarkColors.scaffold
@@ -161,6 +166,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
           SafeArea(
             child: SingleChildScrollView(
+              padding: const EdgeInsets.only(bottom: 100),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -202,6 +208,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   SizedBox(height: 13),
                   _inputField(
                     "Enter Your Name",
+                    errorText: _nameError,
                     controller: nameController,
                     focusNode: nameFocus,
                     nextFocus: emailFocus,
@@ -213,6 +220,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   SizedBox(height: 13),
                   _inputField(
                     "Enter Your Email",
+                    errorText: _emailError,
                     controller: emailController,
                     focusNode: emailFocus,
                     nextFocus: passwordFocus,
@@ -223,7 +231,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                   SizedBox(height: 13),
                   _inputField(
-                    "*********",
+                    "Please Enter Password",
+                    errorText: _passwordError,
                     controller: passwordController,
                     isPassword: true,
                     focusNode: passwordFocus,
@@ -234,15 +243,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   _label("Confirm Password"),
                   SizedBox(height: 13),
                   _inputField(
-                    "*********",
+                    "Please Confirm Password",
+                    errorText: _confirmPasswordError,
                     controller: confirmPasswordController,
                     isPassword: true,
                     focusNode: confirmPasswordFocus,
                     textInputAction: TextInputAction.done,
                   ),
-
                   const SizedBox(height: 25),
-
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 30),
                     child: Row(
@@ -256,14 +264,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             width: 22,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(4),
-                              border: Border.all(color: Colors.black),
-                              color: agree ? Color(0xff001230) : Colors.white,
+                              border: Border.all(
+                                color: isDark ? Colors.white : Colors.black,
+                              ),
+                              color: agree
+                                  ? (isDark
+                                        ? Colors.white
+                                        : const Color(0xff001230))
+                                  : (isDark
+                                        ? Colors.transparent
+                                        : Colors.white),
                             ),
                             child: agree
-                                ? const Icon(
+                                ? Icon(
                                     Icons.check,
                                     size: 16,
-                                    color: Colors.white,
+                                    color: isDark ? Colors.black : Colors.white,
                                   )
                                 : null,
                           ),
@@ -296,6 +312,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ],
                     ),
                   ),
+                  if (_termsError != null)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 30),
+                      child: Text(
+                        _termsError!,
+                        style: const TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                    ),
 
                   const SizedBox(height: 20),
 
@@ -356,14 +380,59 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       _socialIcon(context, "assets/images/google.png"),
-                      const SizedBox(width: 25),
+                      const SizedBox(width: 20),
                       _socialIcon(context, "assets/images/apple.png"),
-                      const SizedBox(width: 25),
-                      _socialIcon(context, "assets/images/facebook.png"),
                     ],
                   ),
 
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 30),
+
+                  Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          "Don’t have an account? ",
+                          style: TextStyle(
+                            fontFamily: 'Lato',
+                            fontSize: 14,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                ? AppDarkColors.white
+                                : Colors.black87,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(
+                              context,
+                              MaterialPageRoute(builder: (ctx) => SignIn()),
+                            );
+                          },
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: Text(
+                            "Sign In",
+                            style: TextStyle(
+                              fontFamily: 'Lato',
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              decoration: TextDecoration.underline,
+                              color:
+                                  Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? AppDarkColors.white
+                                  : AppColors.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -395,87 +464,114 @@ class _SignUpScreenState extends State<SignUpScreen> {
     bool obscure = false,
     bool isPassword = false,
     FocusNode? focusNode,
+    String? errorText,
     FocusNode? nextFocus,
     TextInputAction? textInputAction,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 30),
-      child: Container(
-        height: 50,
-        decoration: BoxDecoration(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? AppDarkColors.textfeild
-              : Color(0xFFE9ECEF),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        padding: const EdgeInsets.only(left: 15),
-        alignment: Alignment.centerLeft,
-        child: TextField(
-          focusNode: focusNode,
-          textInputAction: textInputAction ?? TextInputAction.next,
-          onEditingComplete: () {
-            if (nextFocus != null) {
-              FocusScope.of(context).requestFocus(nextFocus);
-            } else {
-              FocusScope.of(context).unfocus(); // last field
-            }
-          },
-          cursorColor: Theme.of(context).brightness == Brightness.dark
-              ? AppDarkColors.white
-              : Colors.black,
-          controller: controller,
-          obscureText: isPassword ? !_isPasswordVisible : obscure,
-          decoration: InputDecoration(
-            border: InputBorder.none,
-            hintText: hint,
-            hintStyle: TextStyle(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            height: 50,
+            decoration: BoxDecoration(
               color: Theme.of(context).brightness == Brightness.dark
-                  ? Color(0xff646464)
-                  : Colors.black87,
-              fontSize: 14,
-              fontFamily: 'Lato',
+                  ? AppDarkColors.textfeild
+                  : Color(0xFFE9ECEF),
+              borderRadius: BorderRadius.circular(10),
+              border: errorText != null
+                  ? Border.all(color: Colors.red, width: 1)
+                  : null,
             ),
-            suffixIcon: isPassword
-                ? IconButton(
-                    icon: Icon(
-                      _isPasswordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off,
+            padding: const EdgeInsets.only(left: 15),
+            alignment: Alignment.centerLeft,
+            child: TextField(
+              focusNode: focusNode,
+              textInputAction: textInputAction ?? TextInputAction.next,
+              onEditingComplete: () {
+                if (nextFocus != null) {
+                  FocusScope.of(context).requestFocus(nextFocus);
+                } else {
+                  FocusScope.of(context).unfocus();
+                }
+              },
+              cursorColor: Theme.of(context).brightness == Brightness.dark
+                  ? AppDarkColors.white
+                  : Colors.black,
+              controller: controller,
+              obscureText: isPassword ? !_isPasswordVisible : obscure,
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                hintText: hint,
+                hintStyle: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Color(0xff646464)
+                      : Colors.black87,
+                  fontSize: 14,
+                  fontFamily: 'Lato',
+                ),
+                suffixIcon: isPassword
+                    ? IconButton(
+                        icon: Icon(
+                          _isPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
 
-                      size: 20,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _isPasswordVisible = !_isPasswordVisible;
-                      });
-                    },
-                  )
-                : null,
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isPasswordVisible = !_isPasswordVisible;
+                          });
+                        },
+                      )
+                    : null,
+              ),
+            ),
           ),
-        ),
+          if (errorText != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 6, left: 6),
+              child: Text(
+                errorText,
+                style: const TextStyle(
+                  color: Colors.red,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
 
-  // SOCIAL ICON BUTTON
   Widget _socialIcon(BuildContext context, String path) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isApple = path.contains("apple");
 
-    return Container(
-      height: 48,
-      width: 48,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(50),
-        border: Border.all(
-          color: isDark ? const Color(0xFFC7C7C7) : Colors.black26,
+    return GestureDetector(
+      onTap: () {
+        if (path.contains("google")) {
+          _handleGoogleLogin();
+        }
+      },
+      child: Container(
+        height: 48,
+        width: 48,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(50),
+          border: Border.all(
+            color: isDark ? const Color(0xFFC7C7C7) : Colors.black26,
+          ),
         ),
-      ),
-      child: Center(
-        child: Image.asset(
-          path,
-          height: 24,
-          color: (isDark && isApple) ? Colors.white : null,
+        child: Center(
+          child: Image.asset(
+            path,
+            height: 24,
+            color: (isDark && isApple) ? Colors.white : null,
+          ),
         ),
       ),
     );
