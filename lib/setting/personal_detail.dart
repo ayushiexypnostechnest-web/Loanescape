@@ -8,11 +8,13 @@ import 'package:loan_app/models/profile.dart';
 import 'package:loan_app/screens/image.dart';
 import 'package:loan_app/theme/app_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class PersonalDetailScreen extends StatefulWidget {
   final String name;
   final String email;
   final String? imagePath;
+
   const PersonalDetailScreen({
     super.key,
     required this.name,
@@ -40,7 +42,7 @@ class _PersonalDetailScreenState extends State<PersonalDetailScreen> {
   void showLoader(BuildContext context) {
     showDialog(
       context: context,
-      barrierDismissible: false, // ❌ user can't tap outside
+      barrierDismissible: false,
       builder: (_) => const Center(child: CircularProgressIndicator()),
     );
   }
@@ -378,6 +380,14 @@ class _PersonalDetailScreenState extends State<PersonalDetailScreen> {
                               imagePath: _profileImage?.path,
                             ),
                           );
+
+                          await Supabase.instance.client
+                              .from('users')
+                              .update({
+                                'name': _nameController.text,
+                                'email': _emailController.text,
+                              })
+                              .eq('email', widget.email);
                         }
                       : null,
 

@@ -16,7 +16,8 @@
 
 		<key>GIDServerClientID</key>
 		<string>192018092754-1099ftv3ss5sqtcfuhrbdlls0dvbqvvm.apps.googleusercontent.com</string>
-
+	<key>NSUserNotificationUsageDescription</key>
+	<string>This app sends EMI reminders</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app needs photo library access.</string>
 	<key>NSCameraUsageDescription</key>

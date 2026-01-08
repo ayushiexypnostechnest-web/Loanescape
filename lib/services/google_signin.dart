@@ -4,7 +4,7 @@ class GoogleSignin {
   static final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email', 'profile'],
     serverClientId:
-        '192018092754-1099ftv3ss5sqtcfuhrbdlls0dvbqvvm.apps.googleusercontent.com', // WEB CLIENT ID
+        '192018092754-1099ftv3ss5sqtcfuhrbdlls0dvbqvvm.apps.googleusercontent.com',
   );
 
   static Future<GoogleSignInAccount?> login() async {

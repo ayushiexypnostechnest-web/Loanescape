@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:loan_app/screens/dashboard/Bottombar.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:loan_app/screens/sign_in.dart';
 import 'package:loan_app/services/google_signin.dart';
-
+import 'package:loan_app/services/user_local_storage.dart';
 import 'package:loan_app/theme/app_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -32,57 +32,92 @@ class _SignUpScreenState extends State<SignUpScreen> {
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmPasswordController = TextEditingController();
 
-  //FOR GOOGLESIGNIN
   Future<void> _handleGoogleLogin() async {
     final user = await GoogleSignin.login();
-
     if (user == null) return;
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString("name", user.displayName ?? "");
-    await prefs.setString("email", user.email);
+    try {
+      final supabase = Supabase.instance.client;
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const DashboardBottomBar()),
-    );
+      final existingUser = await supabase
+          .from('users')
+          .select()
+          .eq('email', user.email)
+          .maybeSingle();
+
+      if (existingUser == null) {
+        await supabase.from('users').insert({
+          'name': user.displayName ?? 'No Name',
+          'email': user.email,
+          'password': '',
+        });
+      }
+
+      await UserLocalStorage.saveUser(
+        name: user.displayName ?? 'No Name',
+        email: user.email,
+      );
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const DashboardBottomBar()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
   }
 
-  //Shared Prefrence
   Future<void> _saveData() async {
-    if (_validate()) {
+    if (!_validate()) return;
+
+    final name = nameController.text.trim();
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+
+    try {
+      // Check if user already exists
+      final existingUser =
+          await Supabase.instance.client
+                  .from('users')
+                  .select()
+                  .eq('email', email)
+              as List<dynamic>;
+
+      if (existingUser.isNotEmpty) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Email already exists!')));
+        return;
+      }
+
+      final insertResponse = await Supabase.instance.client
+          .from('users')
+          .insert({'name': name, 'email': email, 'password': password});
+
+      print('User inserted: $insertResponse');
+      await UserLocalStorage.saveUser(name: name, email: email);
+
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString("name", nameController.text);
-      await prefs.setString("email", emailController.text);
-      await prefs.setString("password", passwordController.text);
+      await prefs.setBool('isLoggedIn', true);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "Account Created Sucessfully",
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? AppDarkColors.white
-                  : AppColors.white,
-            ),
-          ),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: Theme.of(context).brightness == Brightness.dark
-              ? AppDarkColors.primary
-              : AppColors.primary,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          duration: const Duration(seconds: 2),
-        ),
+        const SnackBar(content: Text('Account created successfully!')),
       );
 
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (ctx) => const DashboardBottomBar()),
+        MaterialPageRoute(builder: (_) => const DashboardBottomBar()),
       );
+    } catch (e) {
+      print('Error: $e');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
 

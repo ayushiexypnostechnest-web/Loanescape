@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -50,6 +51,7 @@ class _PrimiumScreenState extends State<PrimiumScreen> {
       backgroundColor: Color(0xff0F1014),
       body: Center(
         child: Container(
+          width: double.infinity,
           decoration: BoxDecoration(
             image: DecorationImage(
               image: AssetImage("assets/images/premium_screen.png"),
@@ -323,41 +325,25 @@ Widget _planCard({
                 width: 1,
                 gradient: SweepGradient(
                   center: Alignment.center,
-
-                  startAngle: -2.0,
-
+                 
                   colors: [
-                    const Color(0xFF1F2D3A).withOpacity(0.8),
                     const Color(0xFF1F2D3A).withOpacity(0.7),
-                    const Color(0xFFD7F2FF).withOpacity(0.8),
+                    const Color(0xFF1F2D3A).withOpacity(0.7),
                     const Color(0xFFD7F2FF).withOpacity(0.7),
-                    const Color(0xFF1F2D3A).withOpacity(0.9),
-                    const Color(0xFFD7F2FF).withOpacity(0.8),
                     const Color(0xFFD7F2FF).withOpacity(0.7),
-                    const Color(0xFFA8E3FF).withOpacity(1.0),
-                    const Color(0xFFA8E3FF).withOpacity(0.9),
+                    const Color(0xFF1F2D3A).withOpacity(0.7),
+                    const Color(0xFFD7F2FF).withOpacity(0.7),
+                    const Color(0xFFD7F2FF).withOpacity(0.7),
+                    const Color(0xFFD7F2FF).withOpacity(0.7),
                   ],
-                  stops: const [
-                    0.0,
-                    0.05,
-                    0.12,
-                    0.25,
-                    0.45,
-                    0.55,
-                    0.75,
-                    0.88,
-                    1.0,
-                  ],
+                  stops: const [0.05, 0.12, 0.25, 0.45, 0.55, 0.75, 0.88, 1.0],
                 ),
               )
             : Border.all(color: Color(0xff5D5C5C)),
       ),
       child: Container(
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          color: Colors.black.withOpacity(0.25),
-        ),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(18)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -538,7 +524,7 @@ Widget _buildFeaturePage2() {
                     ),
                   ],
                 ),
-                child: const Text(
+                child: Text(
                   "Based on your current loan, making one extra EMI every year can help you save ₹42,000 in interest and close the loan 11 months earlier.\n\nWould you like me to calculate the best month to do this?",
                   style: TextStyle(
                     fontFamily: 'Lato',

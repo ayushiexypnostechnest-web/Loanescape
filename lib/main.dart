@@ -1,15 +1,21 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:loan_app/providers/theme_provider.dart';
+import 'package:loan_app/screen.dart';
 import 'package:loan_app/screens/splash_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:loan_app/providers/currency_provider.dart';
 import 'package:loan_app/theme/app_colors.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  //await Firebase.initializeApp();
+
+  await Supabase.initialize(
+    url: 'https://snyndblegwhgzhtfopim.supabase.co',
+    anonKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNueW5kYmxlZ3doZ3podGZvcGltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4NTIyMTAsImV4cCI6MjA4MzQyODIxMH0.TNVTwQQlJqXwSTN8pp3jGCFJaGvhbldrTbhDgme1U6I',
+  );
   SystemChrome.setSystemUIOverlayStyle(
     SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,

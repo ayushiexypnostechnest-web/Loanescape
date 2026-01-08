@@ -68,7 +68,9 @@ class DashboardScreenState extends State<DashboardScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text("Loan deleted"),
-        backgroundColor: Color(0xffBC0101),
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? AppDarkColors.primary
+            : AppColors.primary,
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -231,7 +233,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                   filter: ImageFilter.blur(sigmaX: 7, sigmaY: 7),
                   child: Container(
                     padding: EdgeInsets.only(
-                      top: MediaQuery.of(context).padding.top - 5,
+                      top: MediaQuery.of(context).padding.top,
                       left: 20,
                       right: 20,
                     ),
@@ -251,12 +253,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                           ),
                           child: ClipOval(
                             child: profileImage != null
-                                ? Image.file(
-                                    profileImage!,
-                                    width: 48,
-                                    height: 48,
-                                    fit: BoxFit.cover,
-                                  )
+                                ? Image.file(profileImage!, fit: BoxFit.cover)
                                 : SvgPicture.asset(
                                     "assets/images/user.svg",
                                     fit: BoxFit.cover,
@@ -357,13 +354,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(34),
                                     color: Colors.white.withOpacity(0.3),
-                                    // boxShadow: [
-                                    //   BoxShadow(
-                                    //     color: Colors.black.withOpacity(0.08),
-                                    //     blurRadius: 6,
-                                    //     offset: const Offset(0, 2),
-                                    //   ),
-                                    // ],
+                                   
                                   ),
                                   child: SizedBox(width: double.infinity),
                                 ),

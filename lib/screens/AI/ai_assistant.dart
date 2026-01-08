@@ -29,7 +29,7 @@ class _AiAssistantState extends State<AiAssistant>
 
   final TextEditingController promptController = TextEditingController();
 
-  static String apiKey = "AIzaSyBenG78uYeuADmNWX_gVfKmlBYHFiwsLxI";
+  static String apiKey = "AIzaSyBl9iQtxg4GbjfTrFHf7818RW4cUxIkE6E";
   late final GenerativeModel model;
   final List<ModelMessage> prompt = [];
   void _scrollToBottom() {
@@ -393,109 +393,6 @@ Make every response feel human, helpful, and trustworthy — like a real financi
                         ),
                       ),
               ),
-
-              // Padding(
-              //   padding: EdgeInsets.only(
-              //     left: 15,
-              //     right: 15,
-              //     bottom: 15,
-              //     top: 15,
-              //   ),
-              //   child: Container(
-              //     constraints: BoxConstraints(maxHeight: 140),
-              //     padding: EdgeInsets.fromLTRB(14, 8, 8, 8),
-              //     decoration: BoxDecoration(
-              //       color: Theme.of(context).brightness == Brightness.dark
-              //           ? AppDarkColors.textfeild
-              //           : Color(0xffEEF1F4),
-
-              //       borderRadius: BorderRadius.circular(24),
-              //       boxShadow: [
-              //         BoxShadow(
-              //           color: Colors.black.withOpacity(0.12),
-              //           blurRadius: 4,
-              //           offset: Offset(0, 0),
-              //         ),
-              //       ],
-              //     ),
-              //     child: Row(
-              //       crossAxisAlignment: CrossAxisAlignment.end,
-              //       children: [
-              //         Expanded(
-              //           child: Padding(
-              //             padding: EdgeInsets.only(bottom: 7),
-              //             child: TextField(
-              //               controller: promptController,
-              //               minLines: 1,
-              //               maxLines: null,
-              //               keyboardType: TextInputType.multiline,
-              //               textInputAction: TextInputAction.send,
-              //               onSubmitted: (_) {
-              //                 if (!isTyping) {
-              //                   sendMessage();
-              //                 }
-              //               },
-              //               cursorColor:
-              //                   Theme.of(context).brightness == Brightness.dark
-              //                   ? AppColors.white
-              //                   : AppColors.black,
-              //               style: TextStyle(fontSize: 14, fontFamily: 'Lato'),
-              //               decoration: InputDecoration(
-              //                 hintText: "Ask anything...",
-              //                 hintStyle: TextStyle(fontSize: 14, height: 1.35),
-              //                 border: InputBorder.none,
-              //                 isDense: true,
-              //                 contentPadding: EdgeInsets.zero,
-              //               ),
-              //             ),
-              //           ),
-              //         ),
-
-              //         SizedBox(width: 6),
-
-              //         /// SEND / STOP BUTTON
-              //         GestureDetector(
-              //           onTap: () {
-              //             if (isTyping) {
-              //               setState(() => stopRequested = true);
-              //             } else {
-              //               sendMessage();
-              //             }
-              //           },
-              //           child: Container(
-              //             height: 38,
-              //             width: 38,
-              //             decoration: BoxDecoration(
-              //               color: Color(0xff7F8897),
-              //               shape: BoxShape.circle,
-              //             ),
-              //             child: Center(
-              //               child: isTyping
-              //                   ? Icon(
-              //                       Icons.stop,
-              //                       size: 20,
-              //                       color:
-              //                           Theme.of(context).brightness ==
-              //                               Brightness.dark
-              //                           ? AppColors.black
-              //                           : AppColors.white,
-              //                     )
-              //                   : SvgPicture.asset(
-              //                       'assets/images/send.svg',
-              //                       height: 18,
-              //                       color:
-              //                           Theme.of(context).brightness ==
-              //                               Brightness.dark
-              //                           ? AppColors.black
-              //                           : AppColors.white,
-              //                     ),
-              //             ),
-              //           ),
-              //         ),
-              //       ],
-              //     ),
-              //   ),
-              // ),
             ],
           ),
           Positioned(

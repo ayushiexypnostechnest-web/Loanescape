@@ -5,8 +5,10 @@ import 'package:loan_app/screens/dashboard/Bottombar.dart';
 import 'package:loan_app/screens/forgetpassword.dart';
 import 'package:loan_app/screens/sign_up.dart';
 import 'package:loan_app/services/google_signin.dart';
+import 'package:loan_app/services/user_local_storage.dart';
 import 'package:loan_app/theme/app_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SignIn extends StatefulWidget {
   const SignIn({super.key});
@@ -25,14 +27,33 @@ class _SignInState extends State<SignIn> {
 
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+
   Future<void> _handleGoogleLogin() async {
     final user = await GoogleSignin.login();
     if (user == null) return;
 
+    final supabase = Supabase.instance.client;
+
+    final existingUser = await supabase
+        .from('users')
+        .select()
+        .eq('email', user.email)
+        .maybeSingle();
+
+    if (existingUser == null) {
+      await supabase.from('users').insert({
+        'name': user.displayName ?? 'No Name',
+        'email': user.email,
+        'password': '',
+      });
+    }
+
+    await UserLocalStorage.saveUser(
+      name: user.displayName ?? 'No Name',
+      email: user.email,
+    );
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString("name", user.displayName ?? "");
-    await prefs.setString("email", user.email);
-    await prefs.setBool("isLoggedIn", true);
+    await prefs.setBool('isLoggedIn', true);
 
     Navigator.pushReplacement(
       context,
@@ -41,65 +62,52 @@ class _SignInState extends State<SignIn> {
   }
 
   void _signIn() async {
-    if (_validate()) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isLoggedIn', true);
-      String? savedEmail = prefs.getString('email');
-      String? savedPassword = prefs.getString('password');
+    if (!_validate()) return;
 
-      if (emailController.text == savedEmail &&
-          passwordController.text == savedPassword) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "Login Successful",
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? AppDarkColors.card
-                    : AppColors.white,
-              ),
-            ),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: Theme.of(context).brightness == Brightness.dark
-                ? AppDarkColors.primary
-                : AppColors.primary,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            duration: const Duration(seconds: 2),
-          ),
-        );
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
 
-        Navigator.pushReplacement(
+    try {
+      final supabase = Supabase.instance.client;
+
+      // Fetch the user with this email
+      final user = await supabase
+          .from('users')
+          .select()
+          .eq('email', email)
+          .maybeSingle();
+
+      if (user == null) {
+        ScaffoldMessenger.of(
           context,
-          MaterialPageRoute(builder: (ctx) => const DashboardBottomBar()),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "Invalid Email or Password",
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? AppDarkColors.card
-                    : AppColors.white,
-              ),
-            ),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: Theme.of(context).brightness == Brightness.dark
-                ? AppDarkColors.primary
-                : AppColors.primary,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            duration: const Duration(seconds: 2),
-          ),
-        );
+        ).showSnackBar(const SnackBar(content: Text("User not found")));
+        return;
       }
+
+      if (user['password'] != password) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Incorrect password")));
+        return;
+      }
+
+      await UserLocalStorage.saveUser(name: user['name'], email: user['email']);
+       final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
+
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Login Successful")));
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const DashboardBottomBar()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
     }
   }
 

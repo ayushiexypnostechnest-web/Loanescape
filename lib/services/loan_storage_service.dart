@@ -6,7 +6,6 @@ class LoanStorageService {
   static const String _key = "loans";
   static List<LoanModel> _cachedLoans = [];
 
-  // ✅ LOAD
   static Future<List<LoanModel>> loadLoans() async {
     final prefs = await SharedPreferences.getInstance();
     final List<String>? storedList = prefs.getStringList(_key);

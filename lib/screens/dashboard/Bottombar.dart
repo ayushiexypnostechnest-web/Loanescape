@@ -31,7 +31,7 @@ class _DashboardBottomBarState extends State<DashboardBottomBar> {
   bool _showViewAll = false;
 
   @override
-  void initState() {
+  void initState() {  
     super.initState();
     _loadLoans();
   }
@@ -104,7 +104,7 @@ class _DashboardBottomBarState extends State<DashboardBottomBar> {
           children: [
             _buildDashboard(),
             const AiAssistant(),
-            SettingPage(
+             SettingPage(
               onProfileUpdated: () {
                 dashboardKey.currentState?.refreshProfile();
               },
@@ -112,7 +112,7 @@ class _DashboardBottomBarState extends State<DashboardBottomBar> {
             ),
           ],
         ),
-      
+
         bottomNavigationBar: _buildBottomBar(isDark),
       ),
     );

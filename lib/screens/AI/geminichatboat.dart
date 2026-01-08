@@ -30,7 +30,7 @@ class _GeminichatboatState extends State<Geminichatboat> {
 
   final TextEditingController promptController = TextEditingController();
 
-  static const String apiKey = "AIzaSyCWw6ufvjmj6gjLjZtGDhwIR1M7G3FGkQU";
+  static const String apiKey = "AIzaSyCxSfPcEEaT989HhNSratlc22FXRcdIWr8";
   late final GenerativeModel model;
 
   List<ModelMessage> get prompt => ChatStorage().messages;
@@ -216,7 +216,6 @@ End of Prompt
       setState(() {
         isThinking = false;
 
-        // Add a failed AI response bubble
         prompt.add(
           ModelMessage(
             isPrompt: false,
@@ -226,7 +225,7 @@ End of Prompt
           ),
         );
 
-        // Auto-scroll to show error bubble
+     
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _scrollToBottom();
         });
@@ -412,7 +411,7 @@ End of Prompt
                     hintText: "Ask anything...",
                     isDense: true,
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.only(bottom: 1),
+                    contentPadding: EdgeInsets.only(bottom: 2),
                   ),
                 ),
               ),
@@ -451,16 +450,19 @@ End of Prompt
         bottom: 14,
       ),
       decoration: BoxDecoration(
-        color: isDark
-            ? AppDarkColors.scaffold.withOpacity(0.30)
-            : AppColors.scaffold,
+        color: isDark ? AppDarkColors.scaffold : AppColors.scaffold,
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 2),
+          BoxShadow(
+            color: isDark
+                ? Colors.white.withOpacity(0.12)
+                : Colors.black.withOpacity(0.12),
+            blurRadius: 2,
+          ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min, // ✅ VERY IMPORTANT
+        mainAxisSize: MainAxisSize.min,
         children: [
           GestureDetector(
             onTap: () => Navigator.pop(context),

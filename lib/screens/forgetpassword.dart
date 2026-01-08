@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:loan_app/screens/otp.dart';
 import 'package:loan_app/theme/app_colors.dart';
+import 'package:loan_app/utils/email_service.dart';
 import 'package:loan_app/utils/local_otp_service.dart';
 
 class Forgetpassword extends StatefulWidget {
@@ -116,22 +117,50 @@ class _ForgetpasswordState extends State<Forgetpassword> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        onPressed: () {
-                          if (emailController.text.isEmpty) {
+                        onPressed: () async {
+                          final email = emailController.text.trim();
+
+                          if (email.isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Please enter email"),
+                              SnackBar(
+                                content: const Text("Please enter email"),
+                                behavior: SnackBarBehavior.floating,
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
                               ),
                             );
                             return;
                           }
 
-                          LocalOtpService.generateOtp(emailController.text);
+                          final otp = LocalOtpService.generateOtp(email);
+                          await EmailService.sendOtp(email, otp);
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text(
+                                "OTP sent successfully to your email 📩",
+                              ),
+                              behavior: SnackBarBehavior.floating,
+                              margin: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
 
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (ctx) => const OtpScreen(),
+                              builder: (_) => const OtpScreen(),
                             ),
                           );
                         },

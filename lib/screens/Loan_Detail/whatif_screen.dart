@@ -143,7 +143,6 @@ class _WhatifScreenState extends State<WhatifScreen> {
                                 ),
                               ),
 
-                            // Centered title when collapsed
                             if (isCollapsed)
                               Center(
                                 child: Text(
@@ -168,16 +167,15 @@ class _WhatifScreenState extends State<WhatifScreen> {
             ),
           ),
 
-          // Main content with proper bottom padding
           SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            padding: const EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 12,
+              bottom: 100,
+            ),
             sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                ..._buildWhatIfCards(),
-                const SizedBox(
-                  height: 40,
-                ), // Extra bottom padding to prevent overflow
-              ]),
+              delegate: SliverChildListDelegate([..._buildWhatIfCards()]),
             ),
           ),
         ],

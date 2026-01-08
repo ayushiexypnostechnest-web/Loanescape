@@ -22,7 +22,14 @@ class _PasswordSetState extends State<PasswordSet> {
   }
 
   void _showMessage(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
   }
 
   @override
@@ -60,28 +67,11 @@ class _PasswordSetState extends State<PasswordSet> {
               onTap: () {
                 Navigator.pop(context);
               },
-              child: Container(
-                height: 32,
-                width: 32,
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                  borderRadius: BorderRadius.circular(5),
-                  boxShadow: [
-                    BoxShadow(
-                      color: isDark
-                          ? Colors.white.withOpacity(0.25)
-                          : Colors.black.withOpacity(0.25),
-                      offset: const Offset(0, 0),
-                      blurRadius: 4,
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Icon(
-                    Icons.arrow_back_ios_new,
-                    size: 18,
-                    color: isDark ? Colors.white : const Color(0xFF001230),
-                  ),
+              child: Center(
+                child: Icon(
+                  Icons.arrow_back_ios_new,
+                  size: 18,
+                  color: isDark ? Colors.white : const Color(0xFF001230),
                 ),
               ),
             ),

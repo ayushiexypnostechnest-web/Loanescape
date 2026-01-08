@@ -170,10 +170,9 @@ class AddEditLoanSheet {
                           focusNode: loanNameFocus,
                           errorText: validateName
                               ? null
-                              : "Do not enter any special charaters or numbers",
+                              : "Do Not Enter Any Special Characters or Numbers",
                           onChanged: (v) {
                             setModalState(() {
-                              // Allow only letters and spaces, no numbers or special chars
                               validateName =
                                   RegExp(r'^[a-zA-Z ]+$').hasMatch(v) &&
                                   v.isNotEmpty;
@@ -1039,25 +1038,26 @@ class AddEditLoanSheet {
 
                                 if (index != null) {
                                   onUpdate(index, loanModel);
+
+                                  Navigator.pop(context);
+
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: const Text(
-                                        "Loan Updated Sucessfully",
+                                        "Loan Updated Successfully",
                                       ),
                                       behavior: SnackBarBehavior.floating,
+                                      margin: const EdgeInsets.fromLTRB(
+                                        16,
+                                        0,
+                                        16,
+                                        16,
+                                      ),
                                       backgroundColor:
                                           Theme.of(context).brightness ==
                                               Brightness.dark
                                           ? AppDarkColors.primary
-                                          : Color(0xff5A7863),
-
-                                      margin: const EdgeInsets.symmetric(
-                                        horizontal: 20,
-                                        vertical: 10,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
+                                          : const Color(0xff5A7863),
                                       duration: const Duration(seconds: 2),
                                     ),
                                   );

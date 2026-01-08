@@ -15,6 +15,7 @@ import 'package:loan_app/setting/review.dart';
 import 'package:loan_app/theme/app_colors.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SettingPage extends StatefulWidget {
   final VoidCallback? onProfileUpdated;
@@ -45,7 +46,10 @@ class _SettingPageState extends State<SettingPage> {
           ? const Color(0xFF001230)
           : const Color(0xFFAFCDFF),
       onConfirm: () async {
-        // 🔥 VERY IMPORTANT
+        final supabase = Supabase.instance.client;
+
+        await supabase.from('users').delete().eq('email', _email);
+
         try {
           await GoogleSignin.disconnect();
         } catch (_) {}
@@ -80,7 +84,6 @@ class _SettingPageState extends State<SettingPage> {
       assetIcon: "assets/images/sign_out.svg",
       confirmColor: const Color(0xffBC0101),
       onConfirm: () async {
-        // Keep Google session (optional)
         await GoogleSignin.logout();
 
         final prefs = await SharedPreferences.getInstance();
